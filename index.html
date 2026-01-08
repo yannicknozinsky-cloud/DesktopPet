@@ -75,7 +75,7 @@
   async function loadTermine() {
     const { data, error } = await supabaseClient
       .from("termine")
-      .select("name, datum, uhrzeitstart, ort")
+      .select("name, datum, uhrzeitstart, uhrzeitende, ort")
       .order("datum");
 
     if (error) {
@@ -89,7 +89,7 @@
       const li = document.createElement("li");
       li.innerHTML = `
         <strong>${t.name}</strong><br>
-        📅 ${t.datum} ⏰ ${t.uhrzeitstart || ""}<br>
+        📅 ${t.datum} ⏰ ${t.uhrzeitstart || ""} - ${t.uhrzeitende || ""}<br>
         📍 ${t.ort || ""}
       `;
       ul.appendChild(li);
