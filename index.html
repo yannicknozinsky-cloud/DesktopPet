@@ -78,25 +78,7 @@
     }
   };
 
-  async function loadWebsites() {
-    const { data, error } = await supabaseClient
-      .from("websites")
-      .select("name, url")
-      .order("name");
-
-    if (error) {
-      console.error("Fehler beim Laden der Websites:", error);
-      return;
-    }
-
-    const ul = document.getElementById("websites");
-    ul.innerHTML = "";
-    data.forEach(w => {
-      const li = document.createElement("li");
-      li.innerHTML = `<a href="${w.url}" target="_blank">${w.name}</a>`;
-      ul.appendChild(li);
-    });
-  }
+ 
 
   async function loadTermine() {
     const { data, error } = await supabaseClient
