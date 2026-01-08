@@ -24,13 +24,19 @@
     li {
       background: white;
       padding: 12px;
-      margin-bottom: 8px;
+      margin-bottom: 12px; /* Abstand zwischen Einträgen */
       border-radius: 8px;
     }
     a {
       text-decoration: none;
       color: #2a9d8f;
       font-weight: bold;
+    }
+    .term-field {
+      margin-right: 8px;
+    }
+    #loginDiv {
+      margin-bottom: 20px;
     }
   </style>
 </head>
@@ -39,18 +45,38 @@
 
 <h1>📱 Meine Supabase Daten</h1>
 
-<h2>🌐 Websites</h2>
-<ul id="websites"></ul>
+<!-- Login -->
+<div id="loginDiv">
+  Passwort: <input type="password" id="pwInput">
+  <button id="pwBtn">Einloggen</button>
+</div>
 
-<h2>📅 Termine</h2>
-<ul id="termine"></ul>
+<!-- Content erst sichtbar nach Login -->
+<div id="content" style="display:none;">
+  <h2>🌐 Websites</h2>
+  <ul id="websites"></ul>
+
+  <h2>📅 Termine</h2>
+  <ul id="termine"></ul>
+</div>
 
 <script>
-  // 🔐 Supabase URL und ANON PUBLIC KEY
+  const PASSWORD = "meinGeheimesPasswort"; // ⚠️ sichtbar im Quellcode
   const supabaseUrl = "https://qkmtybzdthrpjfkbgskw.supabase.co";
   const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrbXR5YnpkdGhycGpma2Jnc2t3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4ODI3ODIsImV4cCI6MjA4MzQ1ODc4Mn0.VO1Bz0vKO4xTrcu-XCsZlrF4HgvgdbGLz3KKFRfG0Do";
-
   const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
+
+  document.getElementById("pwBtn").onclick = () => {
+    const input = document.getElementById("pwInput").value;
+    if (input === PASSWORD) {
+      document.getElementById("loginDiv").style.display = "none";
+      document.getElementById("content").style.display = "block";
+      loadWebsites();
+      loadTermine();
+    } else {
+      alert("Falsches Passwort!");
+    }
+  };
 
   async function loadWebsites() {
     const { data, error } = await supabaseClient
@@ -59,12 +85,12 @@
       .order("name");
 
     if (error) {
-      alert("Fehler beim Laden der Websites: " + error.message);
+      console.error("Fehler beim Laden der Websites:", error);
       return;
     }
 
     const ul = document.getElementById("websites");
-    ul.innerHTML = ""; // vorherige Daten löschen
+    ul.innerHTML = "";
     data.forEach(w => {
       const li = document.createElement("li");
       li.innerHTML = `<a href="${w.url}" target="_blank">${w.name}</a>`;
@@ -79,30 +105,35 @@
       .order("datum");
 
     if (error) {
-      alert("Fehler beim Laden der Termine: " + error.message);
+      console.error("Fehler beim Laden der Termine:", error);
       return;
     }
 
     const ul = document.getElementById("termine");
     ul.innerHTML = "";
-    data.forEach(t => {
-      const li = document.createElement("li");
-     const start = t.uhrzeitstart ? t.uhrzeitstart.slice(0, 5) : "";
-const ende  = t.uhrzeitende   ? t.uhrzeitende.slice(0, 5) : "";
 
-li.innerHTML = `
-  <strong>${t.name}</strong><br>
-  📅 ${t.datum} <br>
-  ⏰ ${start} - ${ende}<br>
-  📍 ${t.ort || ""}
-`;
+    data.forEach(t => {
+      // Uhrzeiten auf HH:MM trimmen
+      const start = t.uhrzeitstart ? t.uhrzeitstart.slice(0,5) : "";
+      const ende  = t.uhrzeitende   ? t.uhrzeitende.slice(0,5) : "";
+
+      // Wochentag berechnen
+      let weekday = "";
+      if(t.datum){
+        const dateObj = new Date(t.datum);
+        weekday = dateObj.toLocaleDateString('de-DE', { weekday: 'long' });
+      }
+
+      const li = document.createElement("li");
+      li.innerHTML = `
+        <strong>${t.name}</strong><br>
+        📅 ${weekday}, ${t.datum} <br>
+        ⏰ ${start} - ${ende}<br>
+        📍 ${t.ort || ""}
+      `;
       ul.appendChild(li);
     });
   }
-
-  // Daten laden
-  loadWebsites();
-  loadTermine();
 </script>
 
 </body>
