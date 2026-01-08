@@ -87,11 +87,11 @@
     ul.innerHTML = "";
     data.forEach(t => {
       const li = document.createElement("li");
-      li.innerHTML = `
-        <strong>${t.name}</strong><br>
-        📅 ${t.datum} ⏰ ${t.uhrzeitstart || ""} - ${t.uhrzeitende || ""}<br>
-        📍 ${t.ort || ""}
-      `;
+     li.innerHTML = `
+      <strong>${t.name}</strong><br>
+      📅 ${t.datum} &nbsp; ⏰ ${t.uhrzeitstart || ""} - ${t.uhrzeitende || ""}<br>
+      📍 ${t.ort || ""}
+    `;
       ul.appendChild(li);
     });
   }
