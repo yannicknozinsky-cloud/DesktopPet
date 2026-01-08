@@ -50,10 +50,10 @@
   const supabaseUrl = "https://qkmtybzdthrpjfkbgskw.supabase.co";
   const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrbXR5YnpkdGhycGpma2Jnc2t3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4ODI3ODIsImV4cCI6MjA4MzQ1ODc4Mn0.VO1Bz0vKO4xTrcu-XCsZlrF4HgvgdbGLz3KKFRfG0Do";
 
-  const supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
+  const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
 
   async function loadWebsites() {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from("websites")
       .select("name, url")
       .order("name");
@@ -73,7 +73,7 @@
   }
 
   async function loadTermine() {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from("termine")
       .select("name, datum, uhrzeitstart, ort")
       .order("datum");
