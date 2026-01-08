@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>Meine Daten</title>
+  <title>Meine Supabase Daten</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <!-- Supabase JS SDK -->
@@ -46,11 +46,11 @@
 <ul id="termine"></ul>
 
 <script>
-  // 🔐 HIER DEINE DATEN EINTRAGEN
-  const supabase = supabase.createClient(
-    "https://qkmtybzdthrpjfkbgskw.supabase.co",
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrbXR5YnpkdGhycGpma2Jnc2t3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4ODI3ODIsImV4cCI6MjA4MzQ1ODc4Mn0.VO1Bz0vKO4xTrcu-XCsZlrF4HgvgdbGLz3KKFRfG0Do"
-  );
+  // 🔐 Supabase URL und ANON PUBLIC KEY
+  const supabaseUrl = "https://qkmtybzdthrpjfkbgskw.supabase.co";
+  const supabaseAnonKey = "HIER_DEIN_ANON_PUBLIC_KEY_EINFÜGEN";
+
+  const supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
 
   async function loadWebsites() {
     const { data, error } = await supabase
@@ -59,11 +59,12 @@
       .order("name");
 
     if (error) {
-      alert(error.message);
+      alert("Fehler beim Laden der Websites: " + error.message);
       return;
     }
 
     const ul = document.getElementById("websites");
+    ul.innerHTML = ""; // vorherige Daten löschen
     data.forEach(w => {
       const li = document.createElement("li");
       li.innerHTML = `<a href="${w.url}" target="_blank">${w.name}</a>`;
@@ -78,11 +79,12 @@
       .order("datum");
 
     if (error) {
-      alert(error.message);
+      alert("Fehler beim Laden der Termine: " + error.message);
       return;
     }
 
     const ul = document.getElementById("termine");
+    ul.innerHTML = "";
     data.forEach(t => {
       const li = document.createElement("li");
       li.innerHTML = `
@@ -94,6 +96,7 @@
     });
   }
 
+  // Daten laden
   loadWebsites();
   loadTermine();
 </script>
