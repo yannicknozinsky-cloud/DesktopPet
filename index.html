@@ -87,11 +87,15 @@
     ul.innerHTML = "";
     data.forEach(t => {
       const li = document.createElement("li");
-     li.innerHTML = `
-      <strong>${t.name}</strong><br>
-      📅 ${t.datum} <br> ⏰ ${t.uhrzeitstart.hour || ""} - ${t.uhrzeitende || ""}<br>
-      📍 ${t.ort || ""}
-    `;
+     const start = t.uhrzeitstart ? t.uhrzeitstart.slice(0, 5) : "";
+const ende  = t.uhrzeitende   ? t.uhrzeitende.slice(0, 5) : "";
+
+li.innerHTML = `
+  <strong>${t.name}</strong><br>
+  📅 ${t.datum} <br>
+  ⏰ ${start} - ${ende}<br>
+  📍 ${t.ort || ""}
+`;
       ul.appendChild(li);
     });
   }
