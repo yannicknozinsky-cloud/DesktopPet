@@ -51,11 +51,129 @@
   <button id="pwBtn">Einloggen</button>
   <img  id="sittingPet" src="BluePet/img4.png" width="100">
 </div>
-<div id="content" style="display:none; padding-bottom: 120px;">
+<div id="content" style="display:none; padding-bottom: 150px;">
   <h2>📅 Termine</h2>
-  <ul id="termine"></ul>
-  <img id="slideshow" src="BluePet/img1.png" width="100">
+
+<div id="week-buttons" style="margin-bottom: 10px; display:flex; gap:8px;">
+  <button id="prev-week">⬅ </button>
+  <button id="today-view">aktuel</button>
+  <button id="next-week">➡</button>
 </div>
+
+  <ul id="termine"></ul>
+</div>
+
+<script>
+let viewMode = "5days"; // Startscreen: heute + 4 Tage
+let currentMonday = getMonday(new Date());
+
+async function loadTermine() {
+  const { data, error } = await supabaseClient
+    .from("termine")
+    .select("name, datum, uhrzeitstart, uhrzeitende, ort")
+    .order("datum");
+
+  if (error) {
+    console.error("Fehler beim Laden der Termine:", error);
+    return;
+  }
+
+  const ul = document.getElementById("termine");
+  ul.innerHTML = "";
+
+  // Termine in lokale Dates umwandeln
+  const localData = data.map(t => ({
+    ...t,
+    datumObj: t.datum ? new Date(t.datum + 'T00:00:00') : null
+  }));
+
+  let days = [];
+
+  if(viewMode === "5days") {
+    // Heute + 4 Tage
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    for(let i=0;i<5;i++){
+      const d = new Date(today);
+      d.setDate(today.getDate() + i);
+      days.push(d);
+    }
+  } else {
+    // Ganze Woche Montag–Sonntag
+    for(let i=0;i<7;i++){
+      const d = new Date(currentMonday);
+      d.setDate(currentMonday.getDate() + i);
+      days.push(d);
+    }
+  }
+
+  // Termine pro Tag
+  days.forEach(day => {
+    const weekdayStr = day.toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
+
+    const dayHeader = document.createElement("h3");
+    dayHeader.textContent = weekdayStr;
+    ul.appendChild(dayHeader);
+
+    const dayTermine = localData.filter(t => t.datumObj && t.datumObj.getTime() === day.getTime());
+
+    if(dayTermine.length === 0){
+      const empty = document.createElement("p");
+      empty.textContent = "(keine Termine)";
+      ul.appendChild(empty);
+    } else {
+      const dayUl = document.createElement("ul");
+      dayTermine.sort((a,b)=> a.uhrzeitstart.localeCompare(b.uhrzeitstart));
+      dayTermine.forEach(t=>{
+        const start = t.uhrzeitstart ? t.uhrzeitstart.slice(0,5) : "";
+        const ende  = t.uhrzeitende   ? t.uhrzeitende.slice(0,5) : "";
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <strong>${t.name}</strong><br>
+          ⏰ ${start} - ${ende}<br>
+          📍 ${t.ort || ""}
+        `;
+        dayUl.appendChild(li);
+      });
+      ul.appendChild(dayUl);
+    }
+  });
+}
+
+// Hilfsfunktion: Montag der Woche
+function getMonday(d){
+  const date = new Date(d);
+  const day = date.getDay(); // 0 = Sonntag
+  const diff = day === 0 ? -6 : 1 - day;
+  date.setDate(date.getDate() + diff);
+  date.setHours(0,0,0,0);
+  return date;
+}
+
+// Buttons
+
+document.getElementById("prev-week").onclick = () => {
+  viewMode = "week";
+  currentMonday.setDate(currentMonday.getDate() - 7);
+  loadTermine();
+};
+
+document.getElementById("next-week").onclick = () => {
+  viewMode = "week";
+  currentMonday.setDate(currentMonday.getDate() + 7);
+  loadTermine();
+};
+
+// Neuer Button für Startscreen / Heute + 5 Tage
+document.getElementById("today-view").onclick = () => {
+  viewMode = "5days";
+  loadTermine();
+};
+
+// Startscreen: 5 Tage
+loadTermine();
+</script>
+
 
 
 
@@ -144,72 +262,6 @@ window.addEventListener('resize', () => {
 
  
 
-async function loadTermine() {
-  const { data, error } = await supabaseClient
-    .from("termine")
-    .select("name, datum, uhrzeitstart, uhrzeitende, ort")
-    .order("datum");
-
-  if (error) {
-    console.error("Fehler beim Laden der Termine:", error);
-    return;
-  }
-
-  const ul = document.getElementById("termine");
-  ul.innerHTML = "";
-
-  // Heute + nächste 4 Tage
-  const days = [];
-  const today = new Date();
-  today.setHours(0,0,0,0);
-
-  for(let i = 0; i < 5; i++){
-    const d = new Date(today);
-    d.setDate(today.getDate() + i);
-    days.push(d);
-  }
-
-  // Termine in lokale Dates umwandeln
-  const localData = data.map(t => {
-    return {
-      ...t,
-      datumObj: t.datum ? new Date(t.datum + 'T00:00:00') : null // Mit Mitternacht in Lokalzeit
-    };
-  });
-
-  // Für jeden Tag
-  days.forEach(day => {
-    const weekday = day.toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
-
-    const dayHeader = document.createElement("h3");
-    dayHeader.textContent = weekday;
-    ul.appendChild(dayHeader);
-
-    // Termine für diesen Tag
-    const dayTermine = localData.filter(t => t.datumObj && t.datumObj.getTime() === day.getTime());
-
-    if(dayTermine.length === 0){
-      const empty = document.createElement("p");
-      empty.textContent = "(keine Termine)";
-      ul.appendChild(empty);
-    } else {
-      const dayUl = document.createElement("ul");
-      dayTermine.forEach(t => {
-        const start = t.uhrzeitstart ? t.uhrzeitstart.slice(0,5) : "";
-        const ende  = t.uhrzeitende   ? t.uhrzeitende.slice(0,5) : "";
-
-        const li = document.createElement("li");
-        li.innerHTML = `
-          <strong>${t.name}</strong><br>
-          ⏰ ${start} - ${ende}<br>
-          📍 ${t.ort || ""}
-        `;
-        dayUl.appendChild(li);
-      });
-      ul.appendChild(dayUl);
-    }
-  });
-}
 
 </script>
 
