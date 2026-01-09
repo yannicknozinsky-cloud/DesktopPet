@@ -43,19 +43,86 @@
 
 <body>
 
-<h1>📱 Meine Supabase Daten - Projekt DesktopPet</h1>
+<h1>📱 Meine Supabase Daten - DesktopPet</h1>
 
 <!-- Login -->
 <div id="loginDiv">
   Passwort: <input type="password" id="pwInput">
   <button id="pwBtn">Einloggen</button>
+  <img  id="sittingPet" src="BluePet/img4.png" width="100">
 </div>
-
-<!-- Content erst sichtbar nach Login -->
-<div id="content" style="display:none;">
+<div id="content" style="display:none; padding-bottom: 120px;">
   <h2>📅 Termine</h2>
   <ul id="termine"></ul>
+  <img id="slideshow" src="BluePet/img1.png" width="100">
 </div>
+
+
+
+<style>
+#slideshow {
+  position: fixed;   /* fest am Viewport */
+  bottom: 10px;      /* 10px Abstand vom unteren Rand */
+  left: 0;           /* Startposition links */
+  width: 100px;
+  height: auto;
+  z-index: 9999;     /* immer über Content */
+}
+#sittingPet{
+  position: fixed;   /* fest am Viewport */
+  bottom: 10px;      /* 10px Abstand vom unteren Rand */
+  width: 100px;
+  height: auto;
+  z-index: 9999;     /* immer über Content */
+}
+
+</style>
+
+<script>
+const images = [
+  "BluePet/img1.png",
+  "BluePet/img2.png",
+  "BluePet/img3.png"
+];
+
+let index = 0;
+const imgElement = document.getElementById("slideshow");
+
+// Bildwechsel
+setInterval(() => {
+  index = (index + 1) % images.length;
+  imgElement.src = images[index];
+}, 100);
+
+// Bewegung + Spiegelung
+let left = 0;
+let direction = 1; // 1 = nach rechts, -1 = nach links
+const speed = 0.5; // Pixel pro Frame (langsamer = kleinerer Wert)
+const maxRight = window.innerWidth - 100; // Bildschirmbreite - Bildbreite
+
+function animate() {
+  left += direction * speed;
+  if (left >= maxRight) {
+    direction = -1; // zurück nach links
+  } else if (left <= 0) {
+    direction = 1; // nach rechts
+  }
+
+  imgElement.style.left = left + 'px';
+  imgElement.style.transform = direction === 1 ? 'scaleX(-1)' : 'scaleX(1)';
+
+  requestAnimationFrame(animate);
+}
+
+requestAnimationFrame(animate);
+
+// optional: auf Fensterresize reagieren
+window.addEventListener('resize', () => {
+  const newMax = window.innerWidth - 100;
+  if (left > newMax) left = newMax;
+});
+</script>
+
 
 
 <script>
