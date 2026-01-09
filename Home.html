@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Meine Supabase Daten - Projekt DesktopPet</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Supabase JS SDK -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 20px;
+      background: #f7f7f7;
+    }
+    h2 {
+      margin-top: 30px;
+    }
+    ul {
+      padding: 0;
+      list-style: none;
+    }
+    li {
+      background: white;
+      padding: 12px;
+      margin-bottom: 12px; /* Abstand zwischen Einträgen */
+      border-radius: 8px;
+    }
+    a {
+      text-decoration: none;
+      color: #2a9d8f;
+      font-weight: bold;
+    }
+    .term-field {
+      margin-right: 8px;
+    }
+    #loginDiv {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+
+<body onload="loadTermine()">
+
+<div class="header">
+    <dic class="dropdown">
+        <button class="dropbtn">Menü</button>
+        <div class="dropdown-content">
+            <a href="index.html">Log out</a>
+            <a href="ToDo.html">To Do</a>
+        </div>
+    </dic>
+</div>
+<h1>HOME</h1>
+
+<div id="content" style=" padding-bottom: 150px;">
+  <h2>📅 Termine</h2>
+
+<div id="week-buttons" style="margin-bottom: 10px; display:flex; gap:8px;">
+  <button id="prev-week">⬅ </button>
+  <button id="today-view">aktuel</button>
+  <button id="next-week">➡</button>
+</div>
+  <ul id="termine"></ul>
+   <img  id="slideshow" src="BluePet/img1.png" width="100">
+</div>
+
+<script>
+let viewMode = "5days"; // Startscreen: heute + 4 Tage
+let currentMonday = getMonday(new Date());
+
+async function loadTermine() {
+  const { data, error } = await supabaseClient
+    .from("termine")
+    .select("name, datum, uhrzeitstart, uhrzeitende, ort")
+    .order("datum");
+
+  if (error) {
+    console.error("Fehler beim Laden der Termine:", error);
+    return;
+  }
+
+  const ul = document.getElementById("termine");
+  ul.innerHTML = "";
+
+  // Termine in lokale Dates umwandeln
+  const localData = data.map(t => ({
+    ...t,
+    datumObj: t.datum ? new Date(t.datum + 'T00:00:00') : null
+  }));
+
+  let days = [];
+
+  if(viewMode === "5days") {
+    // Heute + 4 Tage
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    for(let i=0;i<5;i++){
+      const d = new Date(today);
+      d.setDate(today.getDate() + i);
+      days.push(d);
+    }
+  } else {
+    // Ganze Woche Montag–Sonntag
+    for(let i=0;i<7;i++){
+      const d = new Date(currentMonday);
+      d.setDate(currentMonday.getDate() + i);
+      days.push(d);
+    }
+  }
+
+  // Termine pro Tag
+  days.forEach(day => {
+    const weekdayStr = day.toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
+
+    const dayHeader = document.createElement("h3");
+    dayHeader.textContent = weekdayStr;
+    ul.appendChild(dayHeader);
+
+    const dayTermine = localData.filter(t => t.datumObj && t.datumObj.getTime() === day.getTime());
+
+    if(dayTermine.length === 0){
+      const empty = document.createElement("p");
+      empty.textContent = "(keine Termine)";
+      ul.appendChild(empty);
+    } else {
+      const dayUl = document.createElement("ul");
+      dayTermine.sort((a,b)=> a.uhrzeitstart.localeCompare(b.uhrzeitstart));
+      dayTermine.forEach(t=>{
+        const start = t.uhrzeitstart ? t.uhrzeitstart.slice(0,5) : "";
+        const ende  = t.uhrzeitende   ? t.uhrzeitende.slice(0,5) : "";
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <strong>${t.name}</strong><br>
+          ⏰ ${start} - ${ende}<br>
+          📍 ${t.ort || ""}
+        `;
+        dayUl.appendChild(li);
+      });
+      ul.appendChild(dayUl);
+    }
+  });
+}
+
+// Hilfsfunktion: Montag der Woche
+function getMonday(d){
+  const date = new Date(d);
+  const day = date.getDay(); // 0 = Sonntag
+  const diff = day === 0 ? -6 : 1 - day;
+  date.setDate(date.getDate() + diff);
+  date.setHours(0,0,0,0);
+  return date;
+}
+
+// Buttons
+
+document.getElementById("prev-week").onclick = () => {
+  viewMode = "week";
+  currentMonday.setDate(currentMonday.getDate() - 7);
+  loadTermine();
+};
+
+document.getElementById("next-week").onclick = () => {
+  viewMode = "week";
+  currentMonday.setDate(currentMonday.getDate() + 7);
+  loadTermine();
+};
+
+
+document.getElementById("today-view").onclick = () => {
+  viewMode = "5days";
+  loadTermine();
+};
+
+
+loadTermine();
+</script>
+
+
+
+
+<style>
+#slideshow {
+  position: fixed;   /* fest am Viewport */
+  bottom: 10px;      /* 10px Abstand vom unteren Rand */
+  left: 0;           /* Startposition links */
+  width: 100px;
+  height: auto;
+  z-index: 9999;     /* immer über Content */
+}
+
+.header{
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.dropbtn{
+    background-color: #333;
+    color: white;
+    padding: 8px 12px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+}
+
+.dropdown{
+    position: relative;
+}
+
+.dropdown-content{
+    display: none;
+    position: absolute;
+    left: 0;
+    top: 100%;
+    background-color: white;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.dropdown-content a{
+    color: black;
+    padding: 10px;
+    text-decoration: none;
+    display: block;
+}
+
+.dropdown-content a:hover{
+    background-color: #eee;
+}
+
+.dropdown:hover .dropdown-content{
+    display: block;
+}
+</style>
+
+<script>
+const images = [
+  "BluePet/img1.png",
+  "BluePet/img2.png",
+  "BluePet/img3.png"
+];
+
+let index = 0;
+const imgElement = document.getElementById("slideshow");
+
+// Bildwechsel
+setInterval(() => {
+  index = (index + 1) % images.length;
+  imgElement.src = images[index];
+}, 100);
+
+// Bewegung + Spiegelung
+let left = 0;
+let direction = 1; // 1 = nach rechts, -1 = nach links
+const speed = 0.5; // Pixel pro Frame (langsamer = kleinerer Wert)
+const maxRight = window.innerWidth - 100; // Bildschirmbreite - Bildbreite
+
+function animate() {
+  left += direction * speed;
+  if (left >= maxRight) {
+    direction = -1; // zurück nach links
+  } else if (left <= 0) {
+    direction = 1; // nach rechts
+  }
+
+  imgElement.style.left = left + 'px';
+  imgElement.style.transform = direction === 1 ? 'scaleX(-1)' : 'scaleX(1)';
+
+  requestAnimationFrame(animate);
+}
+
+requestAnimationFrame(animate);
+
+// optional: auf Fensterresize reagieren
+window.addEventListener('resize', () => {
+  const newMax = window.innerWidth - 100;
+  if (left > newMax) left = newMax;
+});
+</script>
+
+
+
+<script>
+  const supabaseUrl = "https://qkmtybzdthrpjfkbgskw.supabase.co";
+  const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrbXR5YnpkdGhycGpma2Jnc2t3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4ODI3ODIsImV4cCI6MjA4MzQ1ODc4Mn0.VO1Bz0vKO4xTrcu-XCsZlrF4HgvgdbGLz3KKFRfG0Do";
+  const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
+
+  
+
+ 
+
+
+</script>
+
+</body>
+</html>
