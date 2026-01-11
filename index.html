@@ -47,7 +47,7 @@
 
 <!-- Login -->
 <div id="loginDiv">
-  Passwort: <input type="number" id="pwInput">
+  Passwort: <input type="text" id="pwInput">
   <button id="pwBtn">➜] Log in</button>
   <img  id="sittingPet" src="BluePet/img4.png" width="100">
 </div>
@@ -70,25 +70,50 @@
 
 
 
+
+
 <script>
-  const PASSWORD = "16694"; // ⚠️ sichtbar im Quellcode
+document.addEventListener("DOMContentLoaded", () => {
+
   const supabaseUrl = "https://qkmtybzdthrpjfkbgskw.supabase.co";
   const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrbXR5YnpkdGhycGpma2Jnc2t3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4ODI3ODIsImV4cCI6MjA4MzQ1ODc4Mn0.VO1Bz0vKO4xTrcu-XCsZlrF4HgvgdbGLz3KKFRfG0Do";
-  const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
 
-  document.getElementById("pwBtn").onclick = () => {
-    const input = document.getElementById("pwInput").value;
-    if (input === PASSWORD) {
-     window.location.href="Home.html"
-    } else {
-      alert("Falsches Passwort!");
+  
+  // WICHTIG: supabase (nicht window.supabase)
+  const supabaseClient = supabase.createClient(
+    supabaseUrl,
+    supabaseAnonKey
+  );
+
+  document.getElementById("pwBtn").addEventListener("click", async () => {
+    const email = "yannick.nozinsky@gmail.com";
+    const password = document.getElementById("pwInput").value;
+
+    console.log("Login versucht"); // DEBUG
+
+    try {
+      const { data, error } = await supabaseClient.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) {
+        console.error(error);
+        alert("Login fehlgeschlagen: " + error.message);
+      } else {
+        console.log("Login OK", data);
+        window.location.href = "Home.html";
+      }
+    } catch (e) {
+      console.error("Fataler Fehler", e);
+      alert("Technischer Fehler – siehe Konsole");
     }
-  };
+  });
 
- 
-
-
+});
 </script>
+
+
 
 </body>
 </html>

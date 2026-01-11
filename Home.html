@@ -1,5 +1,8 @@
+
+
 <!DOCTYPE html>
 <html lang="de">
+    
 <head>
   <meta charset="UTF-8">
   <title>Meine Supabase Daten - Projekt DesktopPet</title>
@@ -7,7 +10,15 @@
 
   <!-- Supabase JS SDK -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script>
+  const supabaseUrl = "https://qkmtybzdthrpjfkbgskw.supabase.co";
+  const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrbXR5YnpkdGhycGpma2Jnc2t3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4ODI3ODIsImV4cCI6MjA4MzQ1ODc4Mn0.VO1Bz0vKO4xTrcu-XCsZlrF4HgvgdbGLz3KKFRfG0Do";
+  const supabaseClient = supabase.createClient(
+      supabaseUrl,
+      supabaseAnonKey
+    );
 
+  </script>
   <style>
     body {
       font-family: system-ui, sans-serif;
@@ -41,16 +52,16 @@
   </style>
 </head>
 
-<body onload="loadTermine()">
+<body >
 
 <div class="header">
-    <dic class="dropdown">
+    <div class="dropdown">
         <button class="dropbtn">☰</button>
         <div class="dropdown-content">
             <a href="index.html">➜] Log out</a>
             <a href="ToDo.html">📝 To Do</a>
         </div>
-    </dic>
+    </div>
 </div>
 <h1>📅 Termine</h1>
 
@@ -66,6 +77,120 @@
    <img  id="slideshow" src="BluePet/img1.png" width="100">
 </div>
 
+<!-- Button zum Öffnen des Modals -->
+<button id="open-modal-btn" style="margin-top:10px;">➕ Neuen Termin hinzufügen</button>
+
+<!-- Modal -->
+<div id="term-modal" style="
+    display:none;
+    position:fixed;
+    top:0; left:0;
+    width:100%; height:100%;
+    background: rgba(0,0,0,0.5);
+    justify-content:center;
+    align-items:center;
+    z-index:10000;
+">
+  <div style="
+      background:white;
+      padding:20px;
+      border-radius:10px;
+      min-width:300px;
+      position:relative;
+  ">
+    <!-- Close Button -->
+    <span id="close-modal" style="
+        position:absolute; top:10px; right:15px;
+        cursor:pointer; font-weight:bold; font-size:18px;">✖</span>
+    
+    <h3>Neuen Termin hinzufügen</h3>
+    
+    <!-- Eingabefelder -->
+    <input type="text" id="modal-name" placeholder="Name" style="margin-bottom:5px; width:100%;">
+    <input type="date" id="modal-datum" style="margin-bottom:5px; width:100%;">
+    <input type="time" id="modal-start" style="margin-bottom:5px; width:48%; margin-right:4%;">
+    <input type="time" id="modal-ende" style="margin-bottom:5px; width:48%;">
+    <input type="text" id="modal-ort" placeholder="Ort" style="margin-bottom:5px; width:100%;">
+    
+    <!-- Repeat Auswahl -->
+    <label for="modal-repeat">Wiederholung:</label>
+    <select id="modal-repeat" style="width:100%; margin-bottom:5px;">
+      <option value="none">Nie</option>
+      <option value="daily">Täglich</option>
+      <option value="weekly">Wöchentlich</option>
+      <option value="monthly">Monatlich</option>
+      <option value="yearly">Jährlich</option>
+    </select>
+    
+    <button id="modal-add-btn" style="width:100%;">➕ Hinzufügen</button>
+  </div>
+</div>
+
+<script>
+  // Modal Elemente
+  const modal = document.getElementById("term-modal");
+  const openBtn = document.getElementById("open-modal-btn");
+  const closeBtn = document.getElementById("close-modal");
+  const addBtn = document.getElementById("modal-add-btn");
+
+  // Öffnen des Modals
+  openBtn.addEventListener("click", () => {
+    modal.style.display = "flex";
+  });
+
+  // Schließen des Modals
+  closeBtn.addEventListener("click", () => {
+    modal.style.display = "none";
+  });
+
+  // Klick auf Hintergrund schließt Modal
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) modal.style.display = "none";
+  });
+
+  // Termin hinzufügen
+  addBtn.addEventListener("click", async () => {
+    const name = document.getElementById("modal-name").value.trim();
+    const datum = document.getElementById("modal-datum").value;
+    const uhrzeitstart = document.getElementById("modal-start").value;
+    const uhrzeitende = document.getElementById("modal-ende").value;
+    const ort = document.getElementById("modal-ort").value.trim();
+    const repeat = document.getElementById("modal-repeat").value;
+
+    if (!name || !datum || !uhrzeitstart || !uhrzeitende) {
+      alert("Bitte Name, Datum, Start und Ende ausfüllen!");
+      return;
+    }
+
+    try {
+      const { data, error } = await supabaseClient
+        .from("termine")
+        .insert([{ name, datum, uhrzeitstart, uhrzeitende, ort, repeat }]);
+
+      if (error) {
+        console.error("Fehler beim Einfügen:", error);
+        alert("Fehler: " + error.message);
+      } else {
+        alert("Termin erfolgreich hinzugefügt!");
+        // Modal schließen und Felder zurücksetzen
+        modal.style.display = "none";
+        document.getElementById("modal-name").value = "";
+        document.getElementById("modal-datum").value = "";
+        document.getElementById("modal-start").value = "";
+        document.getElementById("modal-ende").value = "";
+        document.getElementById("modal-ort").value = "";
+        document.getElementById("modal-repeat").value = "none";
+        // Termine neu laden
+        loadTermine();
+      }
+    } catch (e) {
+      console.error("Fataler Fehler:", e);
+      alert("Technischer Fehler – siehe Konsole");
+    }
+  });
+</script>
+
+
 <script>
 let viewMode = "5days"; // Startscreen: heute + 4 Tage
 let currentMonday = getMonday(new Date());
@@ -76,6 +201,7 @@ async function loadTermine() {
     .select("name, datum, uhrzeitstart, uhrzeitende, ort")
     .order("datum");
 
+    
   if (error) {
     console.error("Fehler beim Laden der Termine:", error);
     return;
@@ -174,7 +300,7 @@ document.getElementById("today-view").onclick = () => {
 };
 
 
-loadTermine();
+
 </script>
 
 
@@ -278,19 +404,15 @@ window.addEventListener('resize', () => {
   const newMax = window.innerWidth - 100;
   if (left > newMax) left = newMax;
 });
-</script>
 
 
-
-<script>
-  const supabaseUrl = "https://qkmtybzdthrpjfkbgskw.supabase.co";
-  const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrbXR5YnpkdGhycGpma2Jnc2t3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4ODI3ODIsImV4cCI6MjA4MzQ1ODc4Mn0.VO1Bz0vKO4xTrcu-XCsZlrF4HgvgdbGLz3KKFRfG0Do";
-  const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
-
-  
-
- 
-
+supabaseClient.auth.getSession().then(({ data }) => {
+      if (!data.session) {
+        window.location.href = "index.html";
+      }else{
+        loadTermine();
+      }
+    });
 
 </script>
 

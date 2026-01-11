@@ -1,172 +1,277 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <title>Meine Supabase Daten - Projekt DesktopPet</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<title>DesktopPet - ToDo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- Supabase JS SDK -->
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-
-  <style>
-    body {
-      font-family: system-ui, sans-serif;
-      margin: 20px;
-      background: #f7f7f7;
-    }
-    h2 {
-      margin-top: 30px;
-    }
-    ul {
-      padding: 0;
-      list-style: none;
-    }
-    li {
-      background: white;
-      padding: 12px;
-      margin-bottom: 12px; /* Abstand zwischen Einträgen */
-      border-radius: 8px;
-    }
-    a {
-      text-decoration: none;
-      color: #2a9d8f;
-      font-weight: bold;
-    }
-    .term-field {
-      margin-right: 8px;
-    }
-    #loginDiv {
-      margin-bottom: 20px;
-    }
-  </style>
-</head>
-
-<body onload="loadTermine()">
-
-<div class="header">
-    <dic class="dropdown">
-        <button class="dropbtn">☰</button>
-        <div class="dropdown-content">
-            <a href="index.html">➜] Log out</a>
-            <a href="Home.html">📅 Termine</a>
-        </div>
-    </dic>
-</div>
-<h1>📝 To Do</h1>
-<img  id="slideshow" src="BluePet/img1.png" width="100">
-
-
-
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <style>
-#slideshow {
-  position: fixed;   /* fest am Viewport */
-  bottom: 10px;      /* 10px Abstand vom unteren Rand */
-  left: 0;           /* Startposition links */
-  width: 100px;
-  height: auto;
-  z-index: 9999;     /* immer über Content */
-}
+body { font-family: system-ui, sans-serif; margin:20px; background:#f7f7f7; }
+h1 { margin-bottom: 20px; }
 
+/* Header / Menu */
+.header { display:flex; align-items:center; gap:15px; margin-bottom:20px; }
+.dropbtn { background-color:#333; color:white; padding:8px 12px; font-size:16px; border:none; cursor:pointer; }
+.dropdown { position:relative; }
+.dropdown-content { display:none; position:absolute; left:0; top:100%; background-color:white; min-width:160px; box-shadow:0 8px 16px rgba(0,0,0,0.2); }
+.dropdown-content a { color:black; padding:10px; text-decoration:none; display:block; }
+.dropdown-content a:hover { background:#eee; }
+.dropdown:hover .dropdown-content { display:block; }
 
-.header{
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
+/* Slideshow */
+#slideshow { position:fixed; bottom:10px; left:0; width:100px; height:auto; z-index:9999; }
 
-.dropbtn{
-    background-color: #333;
-    color: white;
-    padding: 8px 12px;
-    font-size: 16px;
-    border: none;
-    cursor: pointer;
-}
+/* Add ToDo Button */
+#add-todo-btn { margin-bottom:15px; padding:10px 15px; background-color:#2a9d8f; color:white; border:none; border-radius:8px; cursor:pointer; }
 
-.dropdown{
-    position: relative;
-}
+/* Done Dropdown */
+#done-dropdown { margin-bottom:15px; padding:10px; border-radius:6px; border:1px solid #ccc; background:#f0fff0; width:100%; }
 
-.dropdown-content{
-    display: none;
-    position: absolute;
-    left: 0;
-    top: 100%;
-    background-color: white;
-    min-width: 160px;
-    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
-}
+/* ToDo List */
+ul { list-style:none; padding:0; }
+li { background:white; padding:12px; margin-bottom:12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; }
+.todo-info { flex:1; margin-left:15px; }
+.todo-date { font-size:0.9em; color:#555; }
 
-.dropdown-content a{
-    color: black;
-    padding: 10px;
-    text-decoration: none;
-    display: block;
-}
+/* Status-Farben */
+.status-todo { border-left:5px solid #2a9d8f; background:#fafafa; }
+.status-working { border-left:5px solid #ffba08; background:#ffba08; }
+.status-done { border-left:5px solid #8ac926; text-decoration:line-through; color:#777; background:#8ac926; }
 
-.dropdown-content a:hover{
-    background-color: #eee;
-}
+/* Overdue nur visuell */
+.overdue { border-left:5px solid #d00000 !important; background:#d00000 !important; }
 
-.dropdown:hover .dropdown-content{
-    display: block;
-}
+/* Popup */
+#todo-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:10000; }
+#todo-modal .modal-content { background:white; padding:20px; border-radius:12px; width:320px; display:flex; flex-direction:column; gap:10px; }
+#todo-modal input, #todo-modal textarea, #todo-modal select { padding:8px; border-radius:6px; border:1px solid #ccc; width:100%; box-sizing: border-box; }
+#todo-modal button { padding:8px 12px; border:none; border-radius:6px; cursor:pointer; }
+#modal-save { background:#2a9d8f; color:white; }
+#modal-cancel { background:#aaa; color:white; }
 
 </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="dropdown">
+    <button class="dropbtn">☰</button>
+    <div class="dropdown-content">
+      <a href="index.html">➜ Log out</a>
+      <a href="Home.html">📅 Termine</a>
+    </div>
+  </div>
+  <h1>📝 ToDo</h1>
+</div>
+
+<!-- Slideshow -->
+<img id="slideshow" src="BluePet/img1.png" width="100">
+
+<!-- Add ToDo -->
+<button id="add-todo-btn">➕ Neuen ToDo-Eintrag</button>
+
+<!-- Done Dropdown -->
+<select id="done-dropdown">
+  <option value="">✅ Alle erledigten ToDos</option>
+</select>
+
+<!-- ToDo Liste -->
+<ul id="todo-list"></ul>
+
+<!-- Popup -->
+<div id="todo-modal">
+  <div class="modal-content">
+    <h2>Neues ToDo</h2>
+    <input type="text" id="modal-name" placeholder="Name">
+    <textarea id="modal-text" placeholder="Beschreibung"></textarea>
+    <input type="date" id="modal-date">
+    <select id="modal-status">
+      <option value="todo">todo</option>
+      <option value="working">working</option>
+      <option value="done">done</option>
+    </select>
+    <div style="display:flex; justify-content:space-between; margin-top:10px;">
+      <button id="modal-cancel">Abbrechen</button>
+      <button id="modal-save">Speichern</button>
+    </div>
+  </div>
+</div>
 
 <script>
-const images = [
-  "BluePet/img1.png",
-  "BluePet/img2.png",
-  "BluePet/img3.png"
-];
+const supabaseUrl = "https://qkmtybzdthrpjfkbgskw.supabase.co";
+  const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrbXR5YnpkdGhycGpma2Jnc2t3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4ODI3ODIsImV4cCI6MjA4MzQ1ODc4Mn0.VO1Bz0vKO4xTrcu-XCsZlrF4HgvgdbGLz3KKFRfG0Do";
+const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
 
-let index = 0;
-const imgElement = document.getElementById("slideshow");
+// Session Check
+supabaseClient.auth.getSession().then(({data})=>{
+  if(!data.session) window.location.href="index.html";
+  else loadToDos();
+});
 
-// Bildwechsel
-setInterval(() => {
-  index = (index + 1) % images.length;
-  imgElement.src = images[index];
-}, 100);
-
-// Bewegung + Spiegelung
-let left = 0;
-let direction = 1; // 1 = nach rechts, -1 = nach links
-const speed = 0.5; // Pixel pro Frame (langsamer = kleinerer Wert)
-const maxRight = window.innerWidth - 100; // Bildschirmbreite - Bildbreite
-
-function animate() {
-  left += direction * speed;
-  if (left >= maxRight) {
-    direction = -1; // zurück nach links
-  } else if (left <= 0) {
-    direction = 1; // nach rechts
-  }
-
-  imgElement.style.left = left + 'px';
-  imgElement.style.transform = direction === 1 ? 'scaleX(-1)' : 'scaleX(1)';
-
+// Slideshow
+const images=["BluePet/img1.png","BluePet/img2.png","BluePet/img3.png"];
+let index=0;
+const imgElement=document.getElementById("slideshow");
+setInterval(()=>{index=(index+1)%images.length; imgElement.src=images[index];},100);
+let left=0,direction=1,speed=0.5;
+function animate(){
+  left+=direction*speed;
+  const maxRight=window.innerWidth-100;
+  if(left>=maxRight) direction=-1;
+  else if(left<=0) direction=1;
+  imgElement.style.left=left+'px';
+  imgElement.style.transform=direction===1?'scaleX(-1)':'scaleX(1)';
   requestAnimationFrame(animate);
 }
-
 requestAnimationFrame(animate);
+window.addEventListener('resize',()=>{ if(left>window.innerWidth-100) left=window.innerWidth-100; });
 
-// optional: auf Fensterresize reagieren
-window.addEventListener('resize', () => {
-  const newMax = window.innerWidth - 100;
-  if (left > newMax) left = newMax;
+// Popup Logic
+const modal=document.getElementById("todo-modal");
+document.getElementById("add-todo-btn").addEventListener("click",()=>{
+  modal.style.display="flex";
+  document.getElementById("modal-name").value="";
+  document.getElementById("modal-text").value="";
+  document.getElementById("modal-date").valueAsDate=new Date();
+  document.getElementById("modal-status").value="todo";
 });
+document.getElementById("modal-cancel").addEventListener("click",()=>modal.style.display="none");
+window.addEventListener("click",e=>{ if(e.target===modal) modal.style.display="none"; });
+
+document.getElementById("modal-save").addEventListener("click",async()=>{
+  const name=document.getElementById("modal-name").value.trim();
+  const text=document.getElementById("modal-text").value.trim();
+  const date=document.getElementById("modal-date").value;
+  const status=document.getElementById("modal-status").value;
+  if(!name||!text||!date){ alert("Bitte alle Felder ausfüllen!"); return; }
+  const {data,error}=await supabaseClient.from("ToDo").insert([{name,text,date,status}]);
+  if(error){ console.error(error); alert("Fehler beim Speichern"); return; }
+  modal.style.display="none";
+  loadToDos();
+});
+
+// Load ToDos
+async function loadToDos(){
+  const {data,error}=await supabaseClient.from("ToDo").select("*").order("date",{ascending:true});
+  if(error){ console.error(error); return; }
+
+  const ul=document.getElementById("todo-list");
+  const doneDropdown=document.getElementById("done-dropdown");
+  ul.innerHTML="";
+  doneDropdown.innerHTML='<option value="">✅ Alle erledigten ToDos</option>';
+
+  const today=new Date(); today.setHours(0,0,0,0);
+
+  data.forEach(item=>{
+    if(item.status==="done"){
+      const opt=document.createElement("option");
+      opt.text=`${item.name} (${new Date(item.date).toLocaleDateString('de-DE')})`;
+      opt.value=item.id;
+      doneDropdown.appendChild(opt);
+      return; // nicht in Hauptliste anzeigen
+    }
+
+    // visueller Overdue-Effekt
+    let overdueClass="";
+    if(item.status!=="done" && new Date(item.date)<today) overdueClass="overdue";
+
+    const li=document.createElement("li");
+    li.className="status-"+item.status+" "+overdueClass;
+    li.innerHTML=`
+      <input type="checkbox" style="margin-left:5px;">
+      <div class="todo-info">
+        <div style="font-weight:bold;">${item.name}</div>
+        <div>${item.text}</div>
+      </div>
+      <div class="todo-date">${new Date(item.date).toLocaleDateString('de-DE')}</div>
+    `;
+
+const checkbox = li.querySelector("input[type=checkbox]");
+checkbox.addEventListener("click", async () => {
+  let newStatus;
+  let updateData = {};
+
+  switch (item.status) {
+    case "todo":
+      newStatus = "working";
+      break;
+    case "working":
+      newStatus = "done";
+      // Hier donedate setzen
+      updateData.donedate = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+      break;
+  }
+
+  updateData.status = newStatus;
+
+  const { error } = await supabaseClient
+    .from("ToDo")
+    .update(updateData)
+    .eq("id", item.id);
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+  loadToDos();
+});
+
+
+    ul.appendChild(li);
+  });
+
+  // Dropdown-Change: Done → todo
+  doneDropdown.onchange=async()=>{
+    const selectedId=doneDropdown.value;
+    if(!selectedId) return;
+    const {error}=await supabaseClient.from("ToDo").update({status:"todo"}).eq("id",selectedId);
+    if(error){ console.error(error); return; }
+    loadToDos();
+  };
+}
+
+// Funktion: Alte erledigte Todos löschen
+async function cleanupOldDoneTodos() {
+  const { data, error } = await supabaseClient
+    .from("ToDo")
+    .select("id, donedate")
+    .eq("status", "done");
+
+  if (error) {
+    console.error("Fehler beim Abrufen der Done-Todos:", error);
+    return;
+  }
+
+  const today = new Date();
+  for (const item of data) {
+    if (!item.donedate) continue; // donedate null → überspringen
+
+    const doneDate = new Date(item.donedate);
+    const diffTime = today - doneDate;
+    const diffDays = diffTime / (1000 * 60 * 60 * 24); // Millisekunden → Tage
+
+    if (diffDays >= 5) {
+      const { error: delError } = await supabaseClient
+        .from("ToDo")
+        .delete()
+        .eq("id", item.id);
+
+      if (delError) console.error("Fehler beim Löschen:", delError);
+    }
+  }
+
+  loadToDos(); // Liste danach neu laden
+}
+
+// Optional: direkt beim Laden prüfen
+cleanupOldDoneTodos();
+
+// Oder alle X Stunden automatisch aufrufen:
+// setInterval(cleanupOldDoneTodos, 1000 * 60 * 60 * 1); // jede Stunde
+
+
 </script>
-
-
-
-<script>
-  const supabaseUrl = "https://qkmtybzdthrpjfkbgskw.supabase.co";
-  const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrbXR5YnpkdGhycGpma2Jnc2t3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4ODI3ODIsImV4cCI6MjA4MzQ1ODc4Mn0.VO1Bz0vKO4xTrcu-XCsZlrF4HgvgdbGLz3KKFRfG0Do";
-  const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
-</script>
-
 </body>
 </html>
