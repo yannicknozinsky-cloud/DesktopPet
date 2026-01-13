@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Platzbelegung</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+:root {
+  --primary:#2563eb;
+  --bg:#f1f5f9;
+  --card:#ffffff;
+  --border:#e5e7eb;
+}
+
+body {
+  font-family: system-ui;
+  background:var(--bg);
+  margin:0;
+  padding:20px;
+}
+
+/* HEADER */
+.header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:25px;
+}
+.header h1 {
+  margin:0;
+}
+
+/* BUTTONS */
+.btn {
+  background:var(--primary);
+  color:white;
+  border:none;
+  padding:10px 14px;
+  border-radius:8px;
+  cursor:pointer;
+  display:inline-flex;
+  gap:8px;
+  align-items:center;
+}
+.btn.secondary { background:#334155; }
+.btn:hover { opacity:0.9; }
+
+/* CARDS */
+.card {
+  background:var(--card);
+  padding:15px;
+  border-radius:12px;
+  margin-bottom:20px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.05);
+}
+
+/* SELECT / INPUT */
+select, input {
+  width:100%;
+  padding:10px;
+  margin-top:8px;
+  border-radius:8px;
+  border:1px solid var(--border);
+  font-size:14px;
+}
+
+/* PLACE ENTRY */
+.place-box {
+  background:#f8fafc;
+  padding:12px;
+  border-radius:10px;
+  margin-bottom:10px;
+  border-left:4px solid var(--primary);
+}
+
+/* MODAL */
+.modal {
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.5);
+  justify-content:center;
+  align-items:center;
+  z-index:10;
+}
+.modal-content {
+  background:white;
+  padding:20px;
+  border-radius:14px;
+  width:340px;
+}
+.modal-header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+}
+.close {
+  cursor:pointer;
+  font-size:18px;
+}
+
+.header{
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.dropbtn{
+    background-color: #333;
+    color: white;
+    padding: 8px 12px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+}
+
+.dropdown{
+    position: relative;
+}
+
+.dropdown-content{
+    display: none;
+    position: absolute;
+    left: 0;
+    top: 100%;
+    background-color: white;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.dropdown-content a{
+    color: black;
+    padding: 10px;
+    text-decoration: none;
+    display: block;
+}
+
+.dropdown-content a:hover{
+    background-color: #eee;
+}
+
+.dropdown:hover .dropdown-content{
+    display: block;
+}
+</style>
+</head>
+
+<body>
+
+
+
+
+<div class="header">
+ 
+  <div class="dropdown">
+        <button class="dropbtn">☰</button>
+        <div class="dropdown-content">
+            <a href="index.html">➜] Log out</a>
+            <a href="ToDo.html">📝 To Do</a>
+            <a href="Home.html">📅 Termine</a>
+
+        </div>
+    </div>
+  <div>
+    <button class="btn secondary" onclick="openModal('teamsOverviewModal')">
+        <i class="fa-solid fa-users"></i> Teams
+    </button>
+
+    <button class="btn" onclick="openModal('plaetzeOverviewModal')">
+    <i class="fa-solid fa-map"></i> Plätze
+    </button>
+
+    <button class="btn" onclick="openModal('belegungModal')">
+      <i class="fa-solid fa-calendar-plus"></i> Belegung
+    </button>
+  </div>
+</div>
+ <h1>⚽ Platzbelegung</h1>
+<div class="card">
+  <h2><i class="fa-solid fa-list"></i> Platzübersicht</h2>
+  <select id="platzSelect" onchange="loadBelegungen()">
+    <option value="">-- Platz auswählen --</option>
+  </select>
+
+  <!-- Neues Team-Select für Filter -->
+  <select id="teamFilterSelect" onchange="loadBelegungen()">
+    <option value="">-- Team auswählen --</option>
+  </select>
+</div>
+
+<div id="belegungListe"></div>
+
+
+
+<!-- PLATZ MODAL -->
+<div class="modal" id="platzModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3><i class="fa-solid fa-map"></i> Platz anlegen</h3>
+      <span class="close" onclick="closeModal('platzModal')">✖</span>
+    </div>
+    <input id="platz_name" placeholder="Name">
+    <input id="platz_ort" placeholder="Ort">
+    <input id="platz_art" placeholder="Art">
+    <input id="platz_groesse" placeholder="Größe">
+    <button class="btn" onclick="addPlatz()">Speichern</button>
+  </div>
+</div>
+
+<!-- TEAM MODAL -->
+<div class="modal" id="teamModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3><i class="fa-solid fa-users"></i> Team anlegen</h3>
+      <span class="close" onclick="closeModal('teamModal')">✖</span>
+    </div>
+    <input id="team_name" placeholder="Name">
+    <button class="btn" onclick="addTeam()">Speichern</button>
+  </div>
+</div>
+
+<!-- BELEGUNG MODAL -->
+<div class="modal" id="belegungModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3><i class="fa-solid fa-calendar-plus"></i> Belegung</h3>
+      <span class="close" onclick="closeModal('belegungModal')">✖</span>
+    </div>
+
+    <input id="bel_name" placeholder="Name der Belegung">
+    <input type="date" id="bel_datum">
+    <select id="bel_team"></select>
+    <select id="bel_platz"></select>
+    <input type="time" id="bel_start">
+    <input type="time" id="bel_ende">
+
+    <button class="btn" onclick="addBelegung()">Speichern</button>
+  </div>
+</div>
+
+<!-- TEAMS ÜBERSICHT MODAL -->
+<div class="modal" id="teamsOverviewModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3><i class="fa-solid fa-users"></i> Teams</h3>
+      <span class="close" onclick="closeModal('teamsOverviewModal')">✖</span>
+    </div>
+    <div id="teamsListe"></div>
+    <button class="btn" onclick="openModal('teamModal')">
+      <i class="fa-solid fa-plus"></i> Team hinzufügen
+    </button>
+  </div>
+</div>
+
+<!-- PLÄTZE ÜBERSICHT MODAL -->
+<div class="modal" id="plaetzeOverviewModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3><i class="fa-solid fa-map"></i> Plätze</h3>
+      <span class="close" onclick="closeModal('plaetzeOverviewModal')">✖</span>
+    </div>
+    <div id="plaetzeListe"></div>
+    <button class="btn" onclick="openModal('platzModal')">
+      <i class="fa-solid fa-plus"></i> Platz hinzufügen
+    </button>
+  </div>
+</div>
+
+<div class="card">
+  <h2><i class="fa-solid fa-file-import"></i> iCal importieren</h2>
+
+  <label for="icalTeam"><i class="fa-solid fa-users"></i> Team auswählen:</label>
+  <select id="icalTeam" style="margin-bottom:10px;">
+    <option value="">-- Team auswählen --</option>
+  </select>
+
+  <input type="file" id="icalFile" accept=".ics" style="margin-bottom:10px;">
+  <button class="btn" onclick="handleICalUpload()">
+    <i class="fa-solid fa-upload"></i> Hochladen & Importieren
+  </button>
+</div>
+
+
+
+
+
+<script>
+const supabaseUrl = "https://qkmtybzdthrpjfkbgskw.supabase.co";
+  const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrbXR5YnpkdGhycGpma2Jnc2t3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4ODI3ODIsImV4cCI6MjA4MzQ1ODc4Mn0.VO1Bz0vKO4xTrcu-XCsZlrF4HgvgdbGLz3KKFRfG0Do";
+
+const db = supabase.createClient(supabaseUrl, supabaseAnonKey);
+
+
+
+/* MODAL */
+function openModal(id) {
+  document.getElementById(id).style.display = "flex";
+
+  if (id === "belegungModal") {
+    loadTeams();
+    loadPlaetze();
+  } else if (id === "teamsOverviewModal") {
+    loadTeamsOverview();
+  } else if (id === "plaetzeOverviewModal") {
+    loadPlaetzeOverview();
+  }
+}
+
+async function loadTeamsForICal() {
+  const { data: teams } = await db.from("Teams").select("*");
+  const sel = document.getElementById("icalTeam");
+  sel.innerHTML = `<option value="">-- Team auswählen --</option>`;
+  teams.forEach(t => {
+    sel.innerHTML += `<option value="${t.id}">${t.name}</option>`;
+  });
+}
+
+// Direkt beim Laden aufrufen
+loadTeamsForICal();
+
+
+
+function closeModal(id){ document.getElementById(id).style.display="none"; }
+
+/* INSERTS */
+async function addPlatz() {
+  await db.from("Felder").insert({
+    name: platz_name.value,
+    ort: platz_ort.value,
+    art: platz_art.value,
+    groesse: platz_groesse.value
+  });
+  closeModal('platzModal');
+  loadAll();
+}
+
+async function addTeam() {
+  await db.from("Teams").insert({
+    name: team_name.value,
+  });
+  closeModal('teamModal');
+  loadTeams();
+}
+
+async function loadTeamsOverview() {
+  const { data } = await db.from("Teams").select("*");
+  const liste = document.getElementById("teamsListe");
+  liste.innerHTML = data.map(t => `
+    <div class="place-box">
+      <strong>${t.name}</strong>
+    </div>
+  `).join("");
+}
+
+async function loadPlaetzeOverview() {
+  const { data } = await db.from("Felder").select("*");
+  const liste = document.getElementById("plaetzeListe");
+  liste.innerHTML = data.map(p => `
+    <div class="place-box">
+      <strong>${p.name}</strong> (${p.ort}, ${p.art}, ${p.groesse})
+    </div>
+  `).join("");
+}
+
+async function handleICalUpload() {
+  const teamId = document.getElementById("icalTeam").value;
+  if (!teamId) {
+    alert("Bitte ein Team auswählen.");
+    return;
+  }
+
+  const fileInput = document.getElementById("icalFile");
+  if (!fileInput.files || fileInput.files.length === 0) {
+    alert("Bitte eine iCal-Datei auswählen.");
+    return;
+  }
+
+  const file = fileInput.files[0];
+  const text = await file.text();
+
+  importICalToDB(text, teamId);
+}
+
+async function importICalToDB(icalText, teamId) {
+  const lines = icalText.split(/\r?\n/);
+  let currentEvent = null;
+  const events = [];
+
+  // VEVENT parsen
+  for (const line of lines) {
+    if (line.startsWith("BEGIN:VEVENT")) currentEvent = {};
+    else if (line.startsWith("END:VEVENT")) {
+      events.push(currentEvent);
+      currentEvent = null;
+    }
+    else if (currentEvent) {
+      if (line.startsWith("SUMMARY:")) currentEvent.name = line.replace("SUMMARY:", "").trim();
+      else if (line.startsWith("DTSTART:")) currentEvent.start = line.replace("DTSTART:", "").trim();
+      else if (line.startsWith("DTEND:")) currentEvent.end = line.replace("DTEND:", "").trim();
+      else if (line.startsWith("LOCATION:")) currentEvent.location = line.replace("LOCATION:", "").trim();
+    }
+  }
+
+  for (const ev of events) {
+    if (!ev.start || !ev.end || !ev.location || !ev.name) {
+      console.warn("Unvollständiger Termin, wird übersprungen:", ev);
+      continue;
+    }
+
+    // Datum und Uhrzeit extrahieren
+    const datum = `${ev.start.slice(0,4)}-${ev.start.slice(4,6)}-${ev.start.slice(6,8)}`;
+    const zeitstart = `${ev.start.slice(9,11)}:${ev.start.slice(11,13)}`;
+    const zeitende = `${ev.end.slice(9,11)}:${ev.end.slice(11,13)}`;
+
+    // LOCATION prüfen, nur Emmering-Plätze
+    if (!ev.location.includes("82275")) {
+      console.warn(`Termin "${ev.name}" ignoriert (Platz nicht in Emmering).`);
+      continue;
+    }
+
+    // LOCATION parsen: Name = Ort, Art = zweiter Teil
+    const parts = ev.location.split("\\,").map(s => s.trim());
+    const platzName = parts[0];
+    const platzArt = parts[1] || "Unbekannt";
+    const platzOrt = platzName;
+
+    // Platz prüfen oder anlegen
+    let feldId = null;
+    const { data: feldData } = await db.from("Felder").select("id").eq("name", platzName).maybeSingle();
+
+    if (feldData) {
+      feldId = feldData.id;
+    } else {
+      try {
+        const { data: newFeld } = await db.from("Felder").insert({
+          name: platzName,
+          ort: platzOrt,
+          art: platzArt,
+          groesse: "Unbekannt"
+        }).select("id").single();
+        feldId = newFeld.id;
+        console.log(`Platz "${platzName}" automatisch angelegt.`);
+      } catch (err) {
+        console.warn(`Platz "${platzName}" konnte nicht angelegt werden, Termin übersprungen.`);
+        continue;
+      }
+    }
+
+    // Prüfen, ob Termin schon existiert
+    const { data: exist } = await db.from("Belegung")
+      .select("*")
+      .eq("datum", datum)
+      .eq("zeitstart", zeitstart)
+      .eq("feld_id", feldId)
+      .eq("team_id", teamId)
+      .maybeSingle();
+
+    if (exist) {
+      console.log(`Termin "${ev.name}" existiert bereits, wird übersprungen.`);
+      continue;
+    }
+
+    // Termin einfügen
+    await db.from("Belegung").insert({
+      name: ev.name,
+      datum,
+      zeitstart,
+      zeitende,
+      feld_id: feldId,
+      team_id: teamId
+    });
+
+    console.log(`Termin "${ev.name}" für Team-ID ${teamId} hinzugefügt.`);
+  }
+
+  alert("iCal-Import abgeschlossen!");
+  loadPlaetze(); // Optional: aktualisiert die Anzeige
+}
+
+async function addBelegung() {
+  if (!bel_team.value || !bel_platz.value || !bel_datum.value || !bel_start.value || !bel_ende.value) {
+    alert("Bitte alle Felder ausfüllen");
+    return;
+  }
+
+  // Zeitwerte in Minuten umwandeln für Vergleich
+  const startMin = parseInt(bel_start.value.split(":")[0]) * 60 + parseInt(bel_start.value.split(":")[1]);
+  const endMin = parseInt(bel_ende.value.split(":")[0]) * 60 + parseInt(bel_ende.value.split(":")[1]);
+
+  // Check auf Doppelbuchung auf dem gleichen Platz am gleichen Datum
+  const { data: conflicts } = await db.from("Belegung")
+    .select("*")
+    .eq("feld_id", bel_platz.value)
+    .eq("datum", bel_datum.value);
+
+  const overlap = conflicts.some(c => {
+    const cStart = parseInt(c.zeitstart.split(":")[0]) * 60 + parseInt(c.zeitstart.split(":")[1]);
+    const cEnd = parseInt(c.zeitende.split(":")[0]) * 60 + parseInt(c.zeitende.split(":")[1]);
+    return (startMin < cEnd && endMin > cStart); // Wenn sich die Zeitfenster überlappen
+  });
+
+  if (overlap) {
+    alert("Doppelbuchung auf diesem Platz! Bitte andere Zeit wählen.");
+    return;
+  }
+
+  // Kein Konflikt, Belegung einfügen
+  const { error } = await db.from("Belegung").insert({
+    name: bel_name.value,
+    datum: bel_datum.value,
+    team_id: bel_team.value,
+    feld_id: bel_platz.value,
+    zeitstart: bel_start.value,
+    zeitende: bel_ende.value
+  });
+
+  if (error) {
+    console.error(error);
+    alert("Fehler beim Speichern (Foreign Key?)");
+    return;
+  }
+
+  closeModal("belegungModal");
+  loadPlaetze();
+}
+
+
+
+/* LOAD */async function loadTeams() {
+  const {data} = await db.from("Teams").select("*");
+  
+  // Popup Dropdown
+  bel_team.innerHTML = data.map(t =>
+    `<option value="${t.id}">${t.name}</option>`
+  ).join("");
+
+  // Filter Dropdown
+  const filterSelect = document.getElementById("teamFilterSelect");
+  filterSelect.innerHTML = `<option value="">-- Team auswählen --</option>`;
+  data.forEach(t => {
+    filterSelect.innerHTML += `<option value="${t.id}">${t.name}</option>`;
+  });
+}
+
+async function loadPlaetze() {
+  const { data: plaetze, error } = await db.from("Felder").select("*");
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  /* Dropdown im Belegung-Popup */
+  bel_platz.innerHTML = "";
+  plaetze.forEach(p => {
+    bel_platz.innerHTML += `
+      <option value="${p.id}">${p.name}</option>
+    `;
+  });
+
+  /* Dropdown für Platzübersicht */
+  const platzSelect = document.getElementById("platzSelect");
+  platzSelect.innerHTML = `<option value="">-- Platz auswählen --</option>`;
+
+  plaetze.forEach(p => {
+    platzSelect.innerHTML += `
+      <option value="${p.id}">${p.name}</option>
+    `;
+  });
+
+  /* Anzeige zurücksetzen */
+  document.getElementById("belegungListe").innerHTML = "";
+}
+
+async function loadBelegungen() {
+  const platzId = document.getElementById("platzSelect").value;
+  const teamId = document.getElementById("teamFilterSelect").value;
+  const liste = document.getElementById("belegungListe");
+
+  let query = db
+    .from("Belegung")
+    .select(`name, datum, zeitstart, zeitende, Teams(name)`)
+    .order("datum")
+    .order("zeitstart");
+
+  if (platzId) query = query.eq("feld_id", platzId);
+  if (teamId) query = query.eq("team_id", teamId);
+
+  const { data: belegungen } = await query;
+
+  if (!belegungen || belegungen.length === 0) {
+    liste.innerHTML = "<p>Keine Belegungen vorhanden.</p>";
+    return;
+  }
+
+  // Gruppieren nach Datum
+  const gruppiert = {};
+  belegungen.forEach(b => {
+    const d = new Date(b.datum);
+    const datumStr = `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}`;
+    if (!gruppiert[datumStr]) gruppiert[datumStr] = [];
+    gruppiert[datumStr].push(b);
+  });
+
+  // HTML erzeugen
+  let html = "";
+  for (const datum in gruppiert) {
+    html += `<h3>${datum}</h3>`;
+    gruppiert[datum].forEach(b => {
+      html += `
+        <div class="place-box">
+          <strong>${b.name}</strong><br>
+          Team: ${b.Teams.name}<br>
+          ${b.zeitstart} – ${b.zeitende}
+        </div>
+      `;
+    });
+  }
+
+  liste.innerHTML = html;
+}
+
+
+
+
+function loadAll() {
+  loadTeams();
+  loadPlaetze();
+}
+
+loadAll();
+</script>
+
+</body>
+</html>
