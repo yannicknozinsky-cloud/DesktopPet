@@ -147,7 +147,7 @@ document.getElementById("modal-save").addEventListener("click",async()=>{
   const date=document.getElementById("modal-date").value;
   const status=document.getElementById("modal-status").value;
   if(!name||!text||!date){ alert("Bitte alle Felder ausfüllen!"); return; }
-  const {data,error}=await supabaseClient.from("ToDo").insert([{name,text,date,status}]);
+  const {data,error}=await supabaseClient.from("todo").insert([{name,text,date,status}]);
   if(error){ console.error(error); alert("Fehler beim Speichern"); return; }
   modal.style.display="none";
   loadToDos();
@@ -155,7 +155,7 @@ document.getElementById("modal-save").addEventListener("click",async()=>{
 
 // Load ToDos
 async function loadToDos(){
-  const {data,error}=await supabaseClient.from("ToDo").select("*").order("date",{ascending:true});
+  const {data,error}=await supabaseClient.from("todo").select("*").order("date",{ascending:true});
   if(error){ console.error(error); return; }
 
   const ul=document.getElementById("todo-list");
@@ -208,7 +208,7 @@ checkbox.addEventListener("click", async () => {
   updateData.status = newStatus;
 
   const { error } = await supabaseClient
-    .from("ToDo")
+    .from("todo")
     .update(updateData)
     .eq("id", item.id);
 
@@ -227,7 +227,7 @@ checkbox.addEventListener("click", async () => {
   doneDropdown.onchange=async()=>{
     const selectedId=doneDropdown.value;
     if(!selectedId) return;
-    const {error}=await supabaseClient.from("ToDo").update({status:"todo"}).eq("id",selectedId);
+    const {error}=await supabaseClient.from("todo").update({status:"todo"}).eq("id",selectedId);
     if(error){ console.error(error); return; }
     loadToDos();
   };
@@ -236,7 +236,7 @@ checkbox.addEventListener("click", async () => {
 // Funktion: Alte erledigte Todos löschen
 async function cleanupOldDoneTodos() {
   const { data, error } = await supabaseClient
-    .from("ToDo")
+    .from("todo")
     .select("id, donedate")
     .eq("status", "done");
 
@@ -255,7 +255,7 @@ async function cleanupOldDoneTodos() {
 
     if (diffDays >= 5) {
       const { error: delError } = await supabaseClient
-        .from("ToDo")
+        .from("todo")
         .delete()
         .eq("id", item.id);
 
