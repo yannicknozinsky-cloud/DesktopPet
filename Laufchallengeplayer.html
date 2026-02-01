@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Gruppen Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<style>
+body { font-family: system-ui, sans-serif; margin:20px; background:#f7f7f7; }
+h1, h2 { text-align:center; }
+.stats { text-align:center; font-size:18px; margin-bottom:20px; }
+canvas { background:white; border:1px solid #ddd; border-radius:5px; margin:0 auto 30px auto; display:block; }
+table { width:100%; border-collapse: collapse; margin-bottom:50px; }
+th, td { padding:8px; text-align:center; border:1px solid #ddd; }
+</style>
+</head>
+<body>
+
+<h1 id="groupTitle">Gruppen Dashboard</h1>
+<div class="stats" id="groupStats"></div>
+
+<!-- Balkendiagramm -->
+<canvas id="playersChart" width="800" height="400"></canvas>
+
+
+<h2 style="text-align:center;">Alle Runs der Gruppe</h2>
+<div style="text-align:center; margin-bottom:15px;">
+  <label for="playerFilter" style="margin-right:10px; font-weight:bold;">Spieler filtern:</label>
+  <select id="playerFilter" style="padding:5px 10px; font-size:16px;">
+      <option value="">Alle Spieler</option>
+  </select>
+</div>
+<table id="runsTable">
+  <thead>
+    <tr>
+      <th>Spieler</th>
+      <th>Distanz (m)</th>
+      <th>Datum</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<script>
+const supabaseUrl = 'https://qkmtybzdthrpjfkbgskw.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrbXR5YnpkdGhycGpma2Jnc2t3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4ODI3ODIsImV4cCI6MjA4MzQ1ODc4Mn0.VO1Bz0vKO4xTrcu-XCsZlrF4HgvgdbGLz3KKFRfG0Do';
+
+const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+let playersChart; // globale Chart.js-Instanz
+
+function getRandomColor(alpha=0.6){
+    const r = Math.floor(Math.random()*200 + 30);
+    const g = Math.floor(Math.random()*200 + 30);
+    const b = Math.floor(Math.random()*200 + 30);
+    return `rgba(${r},${g},${b},${alpha})`;
+}
+
+// Dashboard laden
+async function loadGroupDashboard(){
+    const gruppeName = sessionStorage.getItem('gruppeName');
+    if(!gruppeName){
+        alert('Keine Gruppe ausgewählt. Bitte erneut einloggen.');
+        window.location.href = 'LoginPlayer.html';
+        return;
+    }
+
+    document.getElementById('groupTitle').textContent = 'Gruppe: ' + gruppeName;
+
+    // Spieler der Gruppe laden
+    const { data: players, error: playerError } = await supabaseClient
+        .from('player')
+        .select('id, Name')
+        .eq('Group', gruppeName);
+
+    if(playerError){ console.error(playerError); return; }
+
+    // Spielerfilter füllen
+    const playerFilter = document.getElementById('playerFilter');
+    playerFilter.innerHTML = '<option value="">Alle Spieler</option>';
+    players.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.id;
+        opt.textContent = p.Name;
+        playerFilter.appendChild(opt);
+    });
+
+    // Balkendiagramm pro Spieler
+    const playerNames = [];
+    const playerDistances = [];
+    const colors = [];
+    let totalRuns = 0;
+    let totalKm = 0;
+
+    for(const player of players){
+        const { data: runs, error: runError } = await supabaseClient
+            .from('RUN')
+            .select('distance')
+            .eq('player', player.id);
+
+        if(runError){ console.error(runError); continue; }
+
+        const sumDistance = runs.reduce((a,b)=>a+b.distance,0);
+        playerNames.push(player.Name);
+        playerDistances.push(sumDistance);
+        colors.push(getRandomColor());
+
+        totalRuns += runs.length;
+        totalKm += sumDistance;
+    }
+
+    document.getElementById('groupStats').innerHTML = `
+        Gesamtanzahl Runs: <b>${totalRuns}</b> | Gesamtkilometer: <b>${totalKm.toFixed(2)} km</b>
+    `;
+
+    const ctx = document.getElementById('playersChart').getContext('2d');
+    if(playersChart){
+        playersChart.data.labels = playerNames;
+        playersChart.data.datasets[0].data = playerDistances;
+        playersChart.data.datasets[0].backgroundColor = colors;
+        playersChart.update();
+    } else {
+        playersChart = new Chart(ctx, {
+            type:'bar',
+            data:{
+                labels: playerNames,
+                datasets:[{
+                    label:'Gesamtdistanz (m)',
+                    data: playerDistances,
+                    backgroundColor: colors,
+                    borderColor: colors.map(c => c.replace('0.6','1')),
+                    borderWidth:1
+                }]
+            },
+            options:{
+                responsive:true,
+                plugins:{ legend:{ display:false } },
+                scales:{
+                    y:{ beginAtZero:true, title:{ display:true, text:'Distanz (m)' } },
+                    x:{ title:{ display:true, text:'Spieler' } }
+                }
+            }
+        });
+    }
+
+    loadAllRuns(); // Tabelle laden
+}
+
+// Läufe laden und filtern
+async function loadAllRuns(){
+    const gruppeName = sessionStorage.getItem('gruppeName');
+    const selectedPlayer = document.getElementById('playerFilter').value;
+
+    const { data: runs, error } = await supabaseClient
+        .from('RUN')
+        .select('distance, date, player (id, Name, Group)')
+        .order('date', { ascending: false });
+
+    if(error){ console.error(error); return; }
+
+    // Filtern nach Gruppe + optional Spieler
+    const filteredRuns = runs.filter(run => 
+        run.player?.Group === gruppeName &&
+        (selectedPlayer === '' || run.player?.id == selectedPlayer)
+    );
+
+    const tbody = document.querySelector('#runsTable tbody');
+    tbody.innerHTML = '';
+
+    filteredRuns.forEach(run => {
+        const tr = document.createElement('tr');
+
+        const nameTd = document.createElement('td');
+        nameTd.textContent = run.player?.Name || 'Unbekannt';
+
+        const distanceTd = document.createElement('td');
+        distanceTd.textContent = run.distance;
+
+        const dateTd = document.createElement('td');
+        dateTd.textContent = new Date(run.date).toLocaleDateString(); // nur Datum
+
+        tr.append(nameTd, distanceTd, dateTd);
+        tbody.appendChild(tr);
+    });
+}
+
+// Spielerfilter onchange
+document.getElementById('playerFilter').addEventListener('change', loadAllRuns);
+
+// Dashboard initial laden
+loadGroupDashboard();
+</script>
+</body>
+</html>

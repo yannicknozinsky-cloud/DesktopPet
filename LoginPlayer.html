@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Gruppen Login</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body { font-family: system-ui, sans-serif; text-align:center; margin-top:50px; }
+input { padding:10px; font-size:16px; width:200px; }
+button { padding:10px 15px; font-size:16px; margin-left:10px; }
+</style>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<h1>Gruppen Login</h1>
+<p>Bitte Passwort deiner Gruppe eingeben:</p>
+<input type="password" id="groupPassword" placeholder="Passwort">
+<button onclick="login()">Login</button>
+
+<script>
+const supabaseUrl = 'https://qkmtybzdthrpjfkbgskw.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrbXR5YnpkdGhycGpma2Jnc2t3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4ODI3ODIsImV4cCI6MjA4MzQ1ODc4Mn0.VO1Bz0vKO4xTrcu-XCsZlrF4HgvgdbGLz3KKFRfG0Do';
+
+const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+async function login(){
+    const pw = document.getElementById('groupPassword').value.trim();
+    if(!pw){ alert('Bitte Passwort eingeben'); return; }
+
+    const { data, error } = await supabaseClient
+        .from('groups')
+        .select('name')
+        .eq('pwd', pw)
+        .single();
+
+    if(error){
+        console.error(error);
+        alert('Fehler beim Prüfen des Passworts');
+        return;
+    }
+
+    if(data){
+        // Gruppe speichern + Loginzeit
+        sessionStorage.setItem('gruppeName', data.name);
+        sessionStorage.setItem('loginTime', Date.now());
+        window.location.href = 'Laufchallengeplayer.html';
+    } else {
+        alert('Falsches Passwort');
+    }
+}
+</script>
+</body>
+</html>
