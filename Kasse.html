@@ -179,11 +179,12 @@ input {
 <!-- BIG BUTTONS -->
 <div class="big-buttons">
     <button onclick="openModalSchnaps()" style="background:#00fff2">Schnaps<br>2,5€</button>
-    <button onclick="addDrink('Soda',4)" style="background:#e2df4a">Soda<br>4€</button>
-    <button onclick="addDrink('Bier/Radler',4)" style="background:#d44594">Bier / Radler<br>4€</button>
+    <button onclick="addDrink('Soda',6)" style="background:#e2df4a">Soda<br>4€</button>
+   
+     <button onclick="openModal(['Bier','Radler','Alk. frei'],6)" style="background:#d44594">Bier & Co<br>4€</button>
     <button onclick="openModal(['Aperol','Lillet Wildberry','Weinschorle'],7)" style="background:#dd6e14">Aperol & Co<br>5€</button>
-    <button onclick="addDrink('Wasser',3)" style="background:#4a90e2">Wasser<br>3€</button>
-    <button onclick="addDrink('Goaßn',6)" style="background:#44e036">Goaßn<br>6€</button>
+    <button onclick="addDrink('Wasser',5)" style="background:#4a90e2">Wasser<br>3€</button>
+    <button onclick="addDrink('Goaßn',8)" style="background:#44e036">Goaßn<br>6€</button>
     <button onclick="openModal(['V. Wildberry','Gin Tonic','Cuba Libre'],9)" style="background:#b000d3">Longdrink<br>7€</button>
     <button onclick="openModalPfand()" style="background:#ff0000">Pfand<br>2€</button>
 </div>
@@ -195,14 +196,11 @@ input {
 </div>
 
 <div class="sum-box">
-    <label>⌨️ Eingabe Kunde</label>
+    <label>⌨️ Gezahlt</label>
     <input id="smallInput" placeholder="0,00">
 </div>
 
-<div class="sum-box">
-    <label>💰 Gegeben Gesamt</label>
-    <input id="givenSum" readonly>
-</div>
+
 
 <div class="sum-box">
     <label>🔁 Rückgeld</label>
@@ -250,7 +248,7 @@ let printed = [];
 let currentPrice = 0;
 
 // Schnaps / Pfand Preisstaffel
-const schnapsPrices = [2.5,5,7.5,10,12.5,15,17.5,20,22.5,25];
+const schnapsPrices = [2.5,5,7.5,10,10,15,17.5,20,22.5,25];
 
 // Modal für beliebige Drinks
 function openModal(names, basePrice) {
@@ -272,7 +270,7 @@ function openModalSchnaps() {
     content.innerHTML = "";
     for(let i=1;i<=10;i++){
         const btn = document.createElement("button");
-        btn.textContent = i + " Schnaps";
+        btn.textContent = i + " -> " +  schnapsPrices[i-1] +"€";
         btn.onclick = ()=>selectDrink("Schnaps x"+i, schnapsPrices[i-1]);
         content.appendChild(btn);
     }
@@ -285,8 +283,8 @@ function openModalPfand() {
     content.innerHTML = "";
     for(let i=1;i<=10;i++){
         const btn = document.createElement("button");
-        btn.textContent = i + " Pfand";
-        btn.onclick = ()=>selectDrink("Pfand x"+i, i*2);
+        btn.textContent = i + " -> " + i*2+"€";
+        btn.onclick = ()=>selectDrink("Pfand x"+i, i*-2);
         content.appendChild(btn);
     }
     document.getElementById("modal").style.display="flex";
@@ -325,13 +323,14 @@ function enterSmall(){
     let v = document.getElementById("smallInput").value.replace(',','.');
     let num = parseFloat(v);
     if(!isNaN(num)) givenTotal += num;
-    document.getElementById("smallInput").value="";
+    // KEIN reset des Eingabefeldes hier mehr
     updateAll();
 }
 
+
 function updateAll(){
     document.getElementById("bigSum").value = bigTotal.toFixed(2).replace('.',',')+" €";
-    document.getElementById("givenSum").value = givenTotal.toFixed(2).replace('.',',')+" €";
+
     document.getElementById("changeSum").value = (givenTotal-bigTotal).toFixed(2).replace('.',',')+" €";
 }
 
