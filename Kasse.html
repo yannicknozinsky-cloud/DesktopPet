@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Kassa</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #f5f5f5;
+    padding: 20px;
+}
+
+/* ---------- BUTTON GRIDS ---------- */
+.big-buttons, .small-buttons {
+    display: grid;
+    gap: 15px;
+}
+
+.big-buttons {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.big-buttons button {
+    height: 120px;
+    font-size: 18px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+}
+
+/* ---------- SMALL BUTTONS ---------- */
+.small-buttons {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.small-buttons button {
+    height: 70px;
+    font-size: 22px;
+    border-radius: 10px;
+}
+
+/* ---------- INPUTS ---------- */
+input {
+    width: 100%;
+    padding: 15px;
+    font-size: 22px;
+    margin: 10px 0;
+    text-align: right;
+}
+
+/* ---------- PRINTED ---------- */
+#printed {
+    margin-top: 20px;
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+}
+
+#printed li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 6px 0;
+}
+
+/* ---------- MODAL ---------- */
+#modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+#modalBox {
+    background: white;
+    width: 80%;
+    max-width: 700px;
+    padding: 25px;
+    border-radius: 20px;
+}
+
+#modalContent {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+#modalContent button {
+    height: 80px;
+    font-size: 20px;
+    border-radius: 14px;
+    border: none;
+    cursor: pointer;
+    background: #4a90e2;
+    color: white;
+}
+
+#abortBtn {
+    margin-top: 20px;
+    width: 100%;
+    height: 70px;
+    font-size: 22px;
+    background: #ff4d4d;
+    color: white;
+    border: none;
+    border-radius: 14px;
+}
+
+/* ---------- SUMMENBOX ---------- */
+.sum-box {
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
+    margin: 15px 0;
+}
+
+.sum-box label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+    font-size: 16px;
+}
+
+.sum-box input {
+    font-size: 26px;
+    font-weight: bold;
+    background: #f0f0f0;
+}
+
+/* ---------- ACTION BUTTONS ---------- */
+.action-btn {
+    width: 100%;
+    height: 80px;
+    font-size: 24px;
+    border: none;
+    border-radius: 16px;
+    cursor: pointer;
+    margin-top: 15px;
+}
+
+.enter-btn {
+    background: #2ecc71;
+    color: white;
+}
+
+.cancel-btn {
+    background: #e74c3c;
+    color: white;
+}
+</style>
+</head>
+
+<body>
+
+<!-- BIG BUTTONS -->
+<div class="big-buttons">
+    <button onclick="openModalSchnaps()" style="background:#00fff2">Schnaps<br> Ficken, Pfeffi <br>Frangelico</button>
+    <button onclick="openModal(6,['Spezi','Cola','Bull'])" style="background:#e2df4a">Soda<br>4€</button>
+    <button onclick="openModal(6,['Bier','Radler','Alkoholfrei','Sekt'])" style="background:#d44594">Bier / Radler<br>4€</button>
+    <button onclick="openModal(7,['Aperol','Lillet Wildberry','Weinschorle'])" style="background:#dd6e14">Aperol & Co<br>5€</button>
+    <button onclick="addDrink('Wasser',5)" style="background:#4a90e2">Wasser<br>3€</button>
+    <button onclick="addDrink('Goaßn',8)" style="background:#44e036">Goaßn<br>6€</button>
+    <button onclick="openModal(9,['V. Wildberry','Gin Tonic','Cuba Libre'])" style="background:#b000d3">Longdrink<br>7€</button>
+    <button onclick="openModalPfand()" style="background:#ff0000">Pfand<br>zurück</button>
+</div>
+
+<!-- SUMMEN -->
+<div class="sum-box">
+    <label>🧾   Rechnung</label>
+    <input id="bigSum" readonly>
+</div>
+
+<div class="sum-box">
+    <label>⌨️  Bezahlt</label>
+    <input id="smallInput" placeholder="0,00">
+</div>
+
+<div class="sum-box">
+    <label>🔁  Rückgeld</label>
+    <input id="changeSum" readonly>
+</div>
+
+<!-- SMALL BUTTONS -->
+<div class="small-buttons">
+    <button onclick="addChar('7')">7</button>
+    <button onclick="addChar('8')">8</button>
+    <button onclick="addChar('9')">9</button>
+    <button onclick="addChar('4')">4</button>
+    <button onclick="addChar('5')">5</button>
+    <button onclick="addChar('6')">6</button>
+    <button onclick="addChar('1')">1</button>
+    <button onclick="addChar('2')">2</button>
+    <button onclick="addChar('3')">3</button>
+    <button onclick="addChar('0')">0</button>
+    <button onclick="addChar(',')">,</button>
+    <button onclick="delChar()">Entf</button>
+</div>
+
+<button class="action-btn enter-btn" onclick="enterSmall()">💰 Zahlung übernehmen</button>
+
+<!-- GEDRUCKT -->
+<div id="printed">
+    <strong>Bestellung:</strong>
+    <ul id="printedList"></ul>
+</div>
+
+<button class="action-btn cancel-btn" onclick="resetAll()">❌ Alles zurücksetzen</button>
+
+<!-- MODAL -->
+<div id="modal">
+    <div id="modalBox">
+        <div id="modalContent"></div>
+        <button id="abortBtn" onclick="closeModal()">Abbruch</button>
+    </div>
+</div>
+
+<script>
+let bigTotal = 0;
+let givenTotal = 0;
+let printed = [];
+let currentPrice = 0;
+
+// ------------------- Big Button Modal -------------------
+function openModal(price, names) {
+    currentPrice = price;
+    const content = document.getElementById("modalContent");
+    content.innerHTML = "";
+
+    names.forEach(name => {
+        const btn = document.createElement("button");
+        btn.textContent = name;
+        btn.onclick = () => selectDrink(name, price);
+        content.appendChild(btn);
+    });
+
+    document.getElementById("modal").style.display = "flex";
+}
+
+function selectDrink(name, price) {
+    addDrink(name, price);
+    closeModal();
+}
+
+function addDrink(name, price) {
+    bigTotal += price;
+    printed.push({name, price});
+    updateAll();
+    renderPrinted();
+}
+
+function closeModal() {
+    document.getElementById("modal").style.display = "none";
+}
+
+// ------------------- Schnaps (variable Preis 1-10) -------------------
+function openModalSchnaps() {
+    const content = document.getElementById("modalContent");
+    content.innerHTML = "";
+    const schnapsPrices = [2.5,5,7.5,10,12,15,17.5,20,22.5,25];
+    for(let i=1;i<=10;i++){
+        const btn = document.createElement("button");
+        btn.textContent = i + "x Schnaps → " + schnapsPrices[i-1] + "€";
+        btn.onclick = () => selectDrink("Schnaps", schnapsPrices[i-1]);
+        content.appendChild(btn);
+    }
+    document.getElementById("modal").style.display = "flex";
+}
+
+// ------------------- Pfand (variable 1-10) -------------------
+function openModalPfand() {
+    const content = document.getElementById("modalContent");
+    content.innerHTML = "";
+    for(let i=1;i<=10;i++){
+        const btn = document.createElement("button");
+        btn.textContent = i + " → " + (i*2) + "€";
+        btn.onclick = () => selectDrink("Pfand Rückgabe", i*-2);
+        content.appendChild(btn);
+    }
+    document.getElementById("modal").style.display = "flex";
+}
+
+// ------------------- Small Buttons -------------------
+function addChar(c) {
+    document.getElementById("smallInput").value += c;
+}
+
+function delChar() {
+    const i = document.getElementById("smallInput");
+    i.value = i.value.slice(0, -1);
+}
+
+function enterSmall() {
+    let v = document.getElementById("smallInput").value.replace(',', '.');
+    let num = parseFloat(v);
+    if (!isNaN(num)) givenTotal += num;
+    document.getElementById("smallInput").value = "";
+    updateAll();
+}
+
+// ------------------- Update & Render -------------------
+function updateAll() {
+    document.getElementById("bigSum").value = bigTotal.toFixed(2).replace('.', ',') + " €";
+    document.getElementById("smallInput").placeholder = givenTotal.toFixed(2).replace('.', ',') + " €";
+    document.getElementById("changeSum").value = (givenTotal - bigTotal).toFixed(2).replace('.', ',') + " €";
+}
+
+function renderPrinted() {
+    const ul = document.getElementById("printedList");
+    ul.innerHTML = "";
+    printed.forEach((p,i)=>{
+        const li=document.createElement("li");
+        li.innerHTML=`${p.name}<button onclick="removePrinted(${i})">❌</button>`;
+        ul.appendChild(li);
+    });
+}
+
+function removePrinted(i) {
+    bigTotal -= printed[i].price;
+    printed.splice(i,1);
+    updateAll();
+    renderPrinted();
+}
+
+function resetAll() {
+    bigTotal = 0;
+    givenTotal = 0;
+    printed = [];
+    updateAll();
+    renderPrinted();
+    document.getElementById("smallInput").value = "";
+    document.getElementById("smallInput").placeholder = "0,00";
+}
+</script>
+
+</body>
+</html>
