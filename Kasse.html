@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <title>Kassa</title>
-
 <style>
 body {
     font-family: Arial, sans-serif;
@@ -19,7 +18,7 @@ body {
 }
 
 .big-buttons {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(2, 1fr);
 }
 
 .big-buttons button {
@@ -47,7 +46,7 @@ input {
     padding: 15px;
     font-size: 22px;
     margin: 8px 0;
-    text-align: right;
+    text-align: center;
 }
 
 /* ---------- PRINTED ---------- */
@@ -69,7 +68,7 @@ input {
 #modal {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.7);
+    background: rgba(0, 0, 0, 0.7);
     display: none;
     align-items: center;
     justify-content: center;
@@ -82,12 +81,76 @@ input {
     max-width: 500px;
     padding: 20px;
     border-radius: 20px;
+    display: flex;
+    flex-direction: column;
 }
 
 #modalContent {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    display: flex;
+    flex-direction: column;
     gap: 12px;
+}
+
+/* SUMMENBOXEN */
+.sum-box {
+    background: white;
+
+
+    padding-left: 15px;
+     padding-right: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.sum-box label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 4px;
+    font-size: 16px;
+}
+
+.sum-box input {
+    font-size: 24px;
+    font-weight: bold;
+    background: #f0f0f0;
+    padding: 10px;
+    text-align: right;
+}
+
+/* BUTTONS */
+.small-buttons {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.small-buttons button {
+    height: 80px;
+    font-size: 22px;
+    border-radius: 10px;
+}
+
+
+/* ---------- ACTION BUTTONS ---------- */
+.action-btn {
+    width: 100%;
+    height: 70px;
+    font-size: 22px;
+    border: none;
+    border-radius: 16px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.enter-btn {
+    background: #2ecc71;
+    color: white;
+}
+
+.cancel-btn {
+    background: #e74c3c;
+    color: white;
 }
 
 #modalContent button {
@@ -111,48 +174,6 @@ input {
     border-radius: 12px;
 }
 
-/* ---------- SUMMENBOX ---------- */
-.sum-box {
-    background: white;
-    padding: 12px;
-    border-radius: 12px;
-    margin: 10px 0;
-}
-
-.sum-box label {
-    display: block;
-    font-weight: bold;
-    margin-bottom: 4px;
-    font-size: 16px;
-}
-
-.sum-box input {
-    font-size: 24px;
-    font-weight: bold;
-    background: #f0f0f0;
-}
-
-/* ---------- ACTION BUTTONS ---------- */
-.action-btn {
-    width: 100%;
-    height: 80px;
-    font-size: 22px;
-    border: none;
-    border-radius: 16px;
-    cursor: pointer;
-    margin-top: 10px;
-}
-
-.enter-btn {
-    background: #2ecc71;
-    color: white;
-}
-
-.cancel-btn {
-    background: #e74c3c;
-    color: white;
-}
-
 /* ---------- RESPONSIVE ---------- */
 @media (max-width: 600px) {
     .big-buttons {
@@ -171,6 +192,47 @@ input {
         font-size: 20px;
     }
 }
+#checkmark {
+    animation: checkmarkAnimation 0.3s ease-in-out;
+}
+
+@keyframes checkmarkAnimation {
+    0% {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.2);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+}
+
+#bigSum {
+    font-size: 40px; /* Schriftgröße erhöhen */
+    font-weight: bold; /* Optional: Um die Schrift dicker zu machen */
+    color: #333; /* Optional: Eine Farbe für den Text */
+}
+
+#smallInput{
+    font-size: 40px; /* Schriftgröße erhöhen */
+
+    color: #333; /* Optional: Eine Farbe für den Text */
+    text-align: center;
+}
+
+#changeSum{
+    font-size: 40px; /* Schriftgröße erhöhen */
+
+    color: #333; /* Optional: Eine Farbe für den Text */
+    text-align: center;
+}
+
+
+
 </style>
 </head>
 
@@ -180,8 +242,7 @@ input {
 <div class="big-buttons">
     <button onclick="openModalSchnaps()" style="background:#00fff2">Schnaps<br>2,5€</button>
     <button onclick="addDrink('Soda',6)" style="background:#e2df4a">Soda<br>4€</button>
-   
-     <button onclick="openModal(['Bier','Radler','Alk. frei'],6)" style="background:#d44594">Bier & Co<br>4€</button>
+    <button onclick="openModal(['Bier','Radler','Alk. frei'],6)" style="background:#d44594">Bier & Co<br>4€</button>
     <button onclick="openModal(['Aperol','Lillet Wildberry','Weinschorle'],7)" style="background:#dd6e14">Aperol & Co<br>5€</button>
     <button onclick="addDrink('Wasser',5)" style="background:#4a90e2">Wasser<br>3€</button>
     <button onclick="addDrink('Goaßn',8)" style="background:#44e036">Goaßn<br>6€</button>
@@ -191,39 +252,11 @@ input {
 
 <!-- SUMMEN -->
 <div class="sum-box">
-    <label>🧾 Zu zahlen</label>
-    <input id="bigSum" readonly>
+    
+    <div id="bigSum">0,00 €</div>
 </div>
 
-<div class="sum-box">
-    <label>⌨️ Gezahlt</label>
-    <input id="smallInput" placeholder="0,00">
-</div>
-
-
-
-<div class="sum-box">
-    <label>🔁 Rückgeld</label>
-    <input id="changeSum" readonly>
-</div>
-
-<!-- SMALL BUTTONS -->
-<div class="small-buttons">
-    <button onclick="addChar('7')">7</button>
-    <button onclick="addChar('8')">8</button>
-    <button onclick="addChar('9')">9</button>
-    <button onclick="addChar('4')">4</button>
-    <button onclick="addChar('5')">5</button>
-    <button onclick="addChar('6')">6</button>
-    <button onclick="addChar('1')">1</button>
-    <button onclick="addChar('2')">2</button>
-    <button onclick="addChar('3')">3</button>
-    <button onclick="addChar('0')">0</button>
-    <button onclick="addChar(',')">,</button>
-    <button onclick="delChar()">Entf</button>
-</div>
-
-<button class="action-btn enter-btn" onclick="enterSmall()">💰 Zahlung übernehmen</button>
+<button class="action-btn enter-btn" onclick="opencheckoutModal()">Checkout</button> 
 
 <!-- GEDRUCKT -->
 <div id="printed">
@@ -237,11 +270,20 @@ input {
 <div id="modal">
     <div id="modalBox">
         <div id="modalContent"></div>
-        <button id="abortBtn" onclick="closeModal()">Abbruch</button>
+        <button id="abortBtn" onclick="closeModal()">Close</button>
     </div>
 </div>
+<!-- Grüner Haken Container -->
+<div id="checkmark" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="48" height="48" fill="#2ecc71">
+        <path d="M9 19L3 13L4.41 11.59L9 16.17L20.59 4.59L22 6L9 19Z"/>
+    </svg>
+</div>
+
+
 
 <script>
+// Global variables for managing the totals and printed list
 let bigTotal = 0;
 let givenTotal = 0;
 let printed = [];
@@ -258,7 +300,7 @@ function openModal(names, basePrice) {
     names.forEach(name => {
         const btn = document.createElement("button");
         btn.textContent = name;
-        btn.onclick = () => selectDrink(name, basePrice);
+        btn.onclick = () => addDrink(name, basePrice);
         content.appendChild(btn);
     });
     document.getElementById("modal").style.display = "flex";
@@ -271,7 +313,8 @@ function openModalSchnaps() {
     for(let i=1;i<=10;i++){
         const btn = document.createElement("button");
         btn.textContent = i + " -> " +  schnapsPrices[i-1] +"€";
-        btn.onclick = ()=>selectDrink("Schnaps x"+i, schnapsPrices[i-1]);
+        btn.onclick = ()=>{addDrink("Schnaps x"+i, schnapsPrices[i-1]);
+        closeModal(); }
         content.appendChild(btn);
     }
     document.getElementById("modal").style.display="flex";
@@ -281,33 +324,92 @@ function openModalSchnaps() {
 function openModalPfand() {
     const content = document.getElementById("modalContent");
     content.innerHTML = "";
-    for(let i=1;i<=10;i++){
+    for (let i = 1; i <= 10; i++) {
         const btn = document.createElement("button");
-        btn.textContent = i + " -> " + i*2+"€";
-        btn.onclick = ()=>selectDrink("Pfand x"+i, i*-2);
+        btn.textContent = i + " -> " + i * 2 + "€";
+        btn.onclick = () => {
+            addDrink("Pfand x" + i, i * -2);  // Hinzufügen des Pfandes und Schließen des Modals
+            closeModal();  // Modal nach Auswahl schließen
+        };
         content.appendChild(btn);
     }
-    document.getElementById("modal").style.display="flex";
+    document.getElementById("modal").style.display = "flex";
 }
+
+
+
+function opencheckoutModal() {
+    const content = document.getElementById("modalContent");
+    content.innerHTML = `
+        
+        <div class="sum-box">
+            <div id="bigSum">${bigTotal.toFixed(2).replace('.',',')} €</div>
+        </div>
+        <div class="sum-box">
+
+            <input id="smallInput" placeholder="gezahlt">
+        </div>
+        <div class="sum-box">
+            <label>🔁 Rückgeld</label>
+            <input id="changeSum" readonly>
+        </div>
+        <div class="small-buttons">
+            <button onclick="addChar('7')">7</button>
+            <button onclick="addChar('8')">8</button>
+            <button onclick="addChar('9')">9</button>
+            <button onclick="addChar('4')">4</button>
+            <button onclick="addChar('5')">5</button>
+            <button onclick="addChar('6')">6</button>
+            <button onclick="addChar('1')">1</button>
+            <button onclick="addChar('2')">2</button>
+            <button onclick="addChar('3')">3</button>
+            <button onclick="addChar('0')">0</button>
+            <button onclick="addChar(',')">,</button>
+            <button onclick="delChar()">Entf</button>
+        </div>
+        <button class="action-btn enter-btn"  style="background:#44e036" onclick="enterSmall()">💰 Rückgeld berechnen</button>
+        <button class="action-btn enter-btn"  style="background:#44e036" onclick="NEW()">NEW</button>
+    `;
+    
+    document.getElementById("modal").style.display = "flex";
+    
+    
+}
+
 
 // Drinks ohne Modal
-function addDrink(name, price){
+// Drinks ohne Modal
+// Drinks ohne Modal
+function addDrink(name, price) {
+    console.log('Drink hinzugefügt:', name, price); // Debugging
     bigTotal += price;
-    printed.push({name, price});
-    updateAll();
+    printed.push({name, price}); // Element zur Liste hinzufügen
     renderPrinted();
+    updateAll();
+    
+    // Zeige den grünen Haken an
+    //const checkmark = document.getElementById("checkmark");
+    //checkmark.style.display = "block"; // Haken anzeigen
+//
+    //// Nach 300ms den Haken wieder ausblenden
+    //setTimeout(() => {
+    //    checkmark.style.display = "none"; // Haken ausblenden
+    //}, 300);
+
+      // Liste sofort aktualisieren, bevor Modal geschlossen wird
+       // Modal schließen
 }
 
-function selectDrink(name, price){
-    bigTotal += price;
-    printed.push({name, price});
-    updateAll();
-    renderPrinted();
-    closeModal();
-}
+
+
+
+
 
 function closeModal(){
+
+    givenTotal = 0;
     document.getElementById("modal").style.display="none";
+    renderPrinted();
 }
 
 function addChar(c){
@@ -323,42 +425,82 @@ function enterSmall(){
     let v = document.getElementById("smallInput").value.replace(',','.');
     let num = parseFloat(v);
     if(!isNaN(num)) givenTotal += num;
-    // KEIN reset des Eingabefeldes hier mehr
     updateAll();
 }
-
 
 function updateAll(){
-    document.getElementById("bigSum").value = bigTotal.toFixed(2).replace('.',',')+" €";
-
+    document.getElementById("bigSum").textContent = bigTotal.toFixed(2).replace('.',',')+" €";
     document.getElementById("changeSum").value = (givenTotal-bigTotal).toFixed(2).replace('.',',')+" €";
+    renderPrinted();
 }
 
-function renderPrinted(){
+function renderPrinted() {
     const ul = document.getElementById("printedList");
-    ul.innerHTML = "";
-    printed.forEach((p,i)=>{
+    ul.innerHTML = ""; // Vorherige Einträge löschen, damit die Liste leer wird
+
+    // Wieder die gedruckten Getränke einfügen, falls vorhanden
+    if (printed.length === 0) {
         const li = document.createElement("li");
-        li.innerHTML = `${p.name}<button onclick="removePrinted(${i})">❌</button>`;
+        li.textContent = "-";
         ul.appendChild(li);
-    });
+    }else{printed.forEach((p, i) => {
+        const li = document.createElement("li");
+        li.innerHTML = `${p.name} <button onclick="removePrinted(${i})">❌</button>`;
+        ul.appendChild(li);
+    });}
+    
 }
 
-function removePrinted(i){
-    bigTotal -= printed[i].price;
-    printed.splice(i,1);
-    updateAll();
+function removePrinted(index) {
+    const removedItem = printed.splice(index, 1)[0];
+    // Entfernen des Getränks aus der Liste 'printed' anhand des Index
+    
+    bigTotal-=removedItem.price;
+    // Nach dem Entfernen, die Anzeige erneut rendern
     renderPrinted();
+    updateAll();
 }
 
-function resetAll(){
-    bigTotal = 0;
-    givenTotal = 0;
-    printed = [];
-    updateAll();
+
+
+function resetAll() {
+    // Alle relevanten Variablen zurücksetzen
+    printed = [];  // Liste der gedruckten Getränke leeren
+    bigTotal = 0;  // Gesamtbetrag auf 0 setzen
+    givenTotal = 0;  // Bereits gezahlter Betrag auf 0 setzen
     renderPrinted();
-    document.getElementById("smallInput").value="";
+    // Anzeige der Gesamtbeträge zurücksetzen
+    updateAll();
+
+    // Eingabefeld für Zahlung leeren
+    document.getElementById("smallInput").value = "";
+
+    // Die Liste unterhalb des Modals leeren (also die gedruckte Liste)
+      // Hier wird die Liste unterhalb des Modals gerendert (leeren)
 }
+
+
+
+function NEW(){
+    // Alle relevanten Variablen zurücksetzen
+    printed = [];  // Liste der gedruckten Getränke leeren
+    bigTotal = 0;  // Gesamtbetrag auf 0 setzen
+    givenTotal = 0;  // Bereits gezahlter Betrag auf 0 setzen
+    
+    // Anzeige der Gesamtbeträge zurücksetzen
+    updateAll();
+
+    // Eingabefeld für Zahlung leeren
+    document.getElementById("smallInput").value = "";
+    closeModal();
+
+    // Die Liste der gedruckten Getränke leeren
+
+
+    // Modal schließen, falls geöffnet
+    
+}
+
 </script>
 </body>
 </html>
