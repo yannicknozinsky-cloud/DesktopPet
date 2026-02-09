@@ -316,36 +316,58 @@ function openModal(names, basePrice) {
     document.getElementById("modal").style.display = "flex";
 }
 
-// Schnaps Modal 1–10
 function openModalSchnaps() {
     const content = document.getElementById("modalContent");
     content.innerHTML = "";
-    for(let i=1;i<=10;i++){
+
+    // Erstelle ein Container-Element mit der Klasse 'small-buttons'
+    const smallButtonsContainer = document.createElement("div");
+    smallButtonsContainer.classList.add("small-buttons");
+
+    for (let i = 1; i <= 10; i++) {
         const btn = document.createElement("button");
-        btn.textContent = i + " -> " +  schnapsPrices[i-1] +"€";
-        btn.onclick = ()=>{addDrink("Schnaps x"+i, schnapsPrices[i-1]);
-        closeModal(); }
-        content.appendChild(btn);
+        btn.textContent = i + " -> " + schnapsPrices[i - 1] + "€";
+        
+        btn.onclick = () => {
+            addDrink("Schnaps x" + i, schnapsPrices[i - 1]);
+            closeModal();
+        };
+
+        smallButtonsContainer.appendChild(btn);
     }
-    document.getElementById("modal").style.display="flex";
+
+    // Füge den Container mit den Buttons zum Content hinzu
+    content.appendChild(smallButtonsContainer);
+
+    document.getElementById("modal").style.display = "flex";
 }
 
-// Pfand Modal 1–10
+
 function openModalPfand() {
     const content = document.getElementById("modalContent");
     content.innerHTML = "";
+
+    // Erstelle ein Container-Element mit der Klasse 'small-buttons'
+    const smallButtonsContainer = document.createElement("div");
+    smallButtonsContainer.classList.add("small-buttons");
+
     for (let i = 1; i <= 10; i++) {
         const btn = document.createElement("button");
         btn.textContent = i + " -> " + i * 2 + "€";
+        
         btn.onclick = () => {
             addDrink("Pfand x" + i, i * -2);  // Hinzufügen des Pfandes und Schließen des Modals
             closeModal();  // Modal nach Auswahl schließen
         };
-        content.appendChild(btn);
+
+        smallButtonsContainer.appendChild(btn);
     }
+
+    // Füge den Container mit den Buttons zum Content hinzu
+    content.appendChild(smallButtonsContainer);
+
     document.getElementById("modal").style.display = "flex";
 }
-
 
 
 function opencheckoutModal() {
