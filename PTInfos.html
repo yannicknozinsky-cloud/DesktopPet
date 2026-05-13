@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Pfingstturnier 2026 - HOME</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<style>
+body { font-family: system-ui, sans-serif; margin:20px; background:#f7f7f7; }
+h1, h2 { text-align:center; }
+.job-badge { 
+    font-size: 10px;
+    display: inline-block; 
+    padding: 2px 5px; 
+    background: #e0e0e0; 
+    border-radius: 20px; 
+    font-weight: bold; 
+    margin-bottom: 10px;
+}
+.stats { text-align:center; font-size:18px; margin-bottom:20px; }
+canvas { background:white; border:1px solid #ddd; border-radius:5px; margin:0 auto 30px auto; display:block; }
+table { width:100%; border-collapse: collapse; margin-bottom:50px; }
+th, td { padding:8px; text-align:center; border:1px solid #ddd; }
+
+.header { 
+    display: flex; 
+    align-items: center; 
+    margin-bottom: 20px;
+    /* Damit der Text wirklich mittig ist, müssen wir den Platz 
+       des Buttons auf der rechten Seite "ausgleichen" */
+    padding-right: 40px; 
+}
+
+.header-text {
+    flex-grow: 1; /* Nimmt den gesamten verfügbaren Platz ein */
+    display: flex;
+    flex-direction: column; 
+    text-align: center; /* Zentriert den Text horizontal */
+}
+
+/* Entfernt Abstände für kompakte Optik */
+.header-text h1, .header-text h2, .header-text h3 {
+    margin: 0;
+    line-height: 1.2;
+}
+
+.header-text h1 { font-size: 1.5rem; }
+.header-text h2 { font-size: 1.1rem; color: #555; }
+.header-text h3 { font-size: 1rem; color: #333; font-weight: normal; }
+
+
+.dropbtn { background-color:#333; color:white; padding:8px 12px; font-size:16px; border:none; cursor:pointer; border-radius: 4px; }
+.dropdown { position:relative; }
+.dropdown-content { display:none; position:absolute; left:0; top:100%; background-color:white; min-width:160px; box-shadow:0 8px 16px rgba(0,0,0,0.2); z-index: 10; }
+.dropdown-content a { color:black; padding:10px; text-decoration:none; display:block; }
+.dropdown-content a:hover { background:#eee; }
+.dropdown:hover .dropdown-content { display:block; }
+</style>
+
+<div class="header">
+  <div class="dropdown">
+    <button class="dropbtn">☰</button>
+    <div class="dropdown-content">
+      <a href="FCEPTLogin.html">➜ Log out</a>
+      <a href="Pfingstturnierhome.html">Home</a>
+      <a href="PTInfos.html">Infos</a>
+    </div>
+  </div>
+
+  <div class="header-text">
+    <h1 id="groupTitle">Pfingstturnier 2026</h1>
+    <h2>Infos</h2>
+  </div>
+</div>
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<style>
+    .accordion-container {
+        max-width: 600px;
+        margin: 20px auto;
+        font-family: system-ui, sans-serif;
+    }
+
+    /* Das eigentliche Dropdown-Element */
+    .accordion-item {
+        border-bottom: 1px solid #ddd;
+        background: white;
+    }
+
+    /* Verstecke die Checkbox (sie steuert den Zustand) */
+    .accordion-item input {
+        display: none;
+    }
+
+    /* Das Label ist der klickbare Header */
+    .accordion-header {
+        display: block;
+        padding: 15px;
+        font-weight: bold;
+        cursor: pointer;
+        background: #f1f1f1;
+        transition: background 0.3s;
+        position: relative;
+    }
+
+    .accordion-header:hover {
+        background: #e0e0e0;
+    }
+
+    /* Ein kleines Plus/Minus Icon rechts */
+    .accordion-header::after {
+        content: '+';
+        position: absolute;
+        right: 20px;
+    }
+
+    /* Der versteckte Textbereich */
+    .accordion-content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-out;
+        background: white;
+    }
+
+    .accordion-content p {
+        padding: 15px;
+        margin: 0;
+        line-height: 1.5;
+        color: #333;
+    }
+
+    /* WENN die Checkbox aktiviert ist, zeige den Text */
+    .accordion-item input:checked ~ .accordion-content {
+        max-height: 500px; /* Genug Platz für langen Text */
+    }
+
+    /* Icon ändern wenn offen */
+    .accordion-item input:checked ~ .accordion-header::after {
+        content: '−';
+    }
+</style>
+</head>
+<body>
+
+<div class="accordion-container">
+    <h2>Turnier Infos</h2>
+
+    <div class="accordion-item">
+        <input type="checkbox" id="item1">
+        <label for="item1" class="accordion-header">Ablauf</label>
+        <div class="accordion-content">
+            <p>Hier steht ein sehr langer Text über die Regeln des Pfingstturniers. Da dieser Bereich "ausklappt", rutschen alle anderen Punkte einfach nach unten, genau wie in einer Tabelle oder Liste. Du kannst hier beliebig viel schreiben.</p>
+        </div>
+    </div>
+
+    <div class="accordion-item">
+        <input type="checkbox" id="item2">
+        <label for="item2" class="accordion-header">Verpflegung</label>
+        <div class="accordion-content">
+            <p>Es gibt Bratwurst, Pommes und Kaltgetränke. Die Preise sind moderat. Der Kiosk öffnet täglich ab 09:00 Uhr und schließt nach dem letzten Spiel der Gruppe D.</p>
+        </div>
+    </div>
+
+    <div class="accordion-item">
+        <input type="checkbox" id="item3">
+        <label for="item3" class="accordion-header">Anfahrt & Parken</label>
+        <div class="accordion-content">
+            <p>Bitte nutzt die Parkplätze am Waldstadion. Von dort aus sind es nur 5 Minuten Fußweg zu den Plätzen C und E. Achtung: Die Hauptstraße ist teilweise gesperrt.</p>
+        </div>
+    </div>
+
+    <div class="accordion-item">
+        <input type="checkbox" id="item4">
+        <label for="item4" class="accordion-header">Packliste</label>
+        <div class="accordion-content">
+            <p>Bitte nutzt die Parkplätze am Waldstadion. Von dort aus sind es nur 5 Minuten Fußweg zu den Plätzen C und E. Achtung: Die Hauptstraße ist teilweise gesperrt.</p>
+        </div>
+    </div>
+
+    <div class="accordion-item">
+        <input type="checkbox" id="item5">
+        <label for="item5" class="accordion-header">Regeln für Klein und Groß</label>
+        <div class="accordion-content">
+            <p>Bitte nutzt die Parkplätze am Waldstadion. Von dort aus sind es nur 5 Minuten Fußweg zu den Plätzen C und E. Achtung: Die Hauptstraße ist teilweise gesperrt.</p>
+        </div>
+    </div>
+
+
+</div>
+
+</body>
+</html>
+
+
+<script>
+    // Supabase Konfiguration (muss hier nochmal rein, damit der Client verfügbar ist)
+    const supabaseUrl = 'https://qkmtybzdthrpjfkbgskw.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrbXR5YnpkdGhycGpma2Jnc2t3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4ODI3ODIsImV4cCI6MjA4MzQ1ODc4Mn0.VO1Bz0vKO4xTrcu-XCsZlrF4HgvgdbGLz3KKFRfG0Do';
+    const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+    // 1. Daten aus dem sessionStorage abrufen
+    const vorname = sessionStorage.getItem('userVorname');
+    const team = sessionStorage.getItem('gruppeName');
+    const userId = sessionStorage.getItem('userId'); // Wir brauchen die ID für die Abfrage
+
+    // 2. Prüfen, ob User eingeloggt ist
+    if (!vorname || !userId) {
+        alert("Bitte erst einloggen!");
+        window.location.href = 'index.html'; 
+    } else {
+        // Namen anzeigen
+
+        
+        // 3. Job live aus der Datenbank laden
+        loadJobData(userId);
+    }
+
+    async function loadJobData(id) {
+        try {
+            const { data, error } = await supabaseClient
+                .from('Pfingstturnier')
+                .select('job')
+                .eq('id', id)
+                .single();
+
+            if (error) throw error;
+
+            if (data) {
+                // Den Job-Wert anzeigen (z.B. "1", "Trainer", etc.)
+                document.getElementById('user-job').innerText = data.job;
+                
+                // Optional: Je nach Job-Nummer einen Text anzeigen
+                // if(data.job == 1) document.getElementById('user-job').innerText = "Spieler";
+            }
+        } catch (err) {
+            console.error("Fehler beim Laden des Jobs:", err.message);
+            document.getElementById('user-job').innerText = "Fehler";
+        }
+    }
+</script>
+</body>
+</html>

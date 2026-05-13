@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<meta charset="UTF-8">
+<title>Pfingstturnier 2026 - HOME</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<style>
+
+    /* Modal Styling */
+.modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
+.modal-content { background-color: white; margin: 15% auto; padding: 20px; border-radius: 8px; width: 300px; text-align: center; }
+.admin-btn { background-color: #333; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 10px; }
+    /* Grund-Styling */
+    body { font-family: system-ui, sans-serif; margin:20px; background:#f7f7f7; }
+    
+    /* Header & Navigation */
+    .header { display: flex; align-items: center; margin-bottom: 20px; padding-right: 40px; }
+    .header-text { flex-grow: 1; display: flex; flex-direction: column; text-align: center; }
+    .header-text h1 { font-size: 1.5rem; margin: 0; }
+    .header-text h2 { font-size: 1.1rem; color: #555; margin: 0; }
+    .header-text h3 { font-size: 1rem; color: #333; font-weight: normal; margin: 0; }
+
+    .dropbtn { background-color:#333; color:white; padding:8px 12px; font-size:16px; border:none; cursor:pointer; border-radius: 4px; }
+    .dropdown { position:relative; }
+    .dropdown-content { display:none; position:absolute; left:0; top:100%; background-color:white; min-width:160px; box-shadow:0 8px 16px rgba(0,0,0,0.2); z-index: 10; }
+    .dropdown-content a { color:black; padding:10px; text-decoration:none; display:block; }
+    .dropdown:hover .dropdown-content { display:block; }
+
+    /* Akkordeon / Dropdowns untereinander */
+    .accordion-container { max-width: 600px; margin: 20px auto; }
+    .accordion-item { border-bottom: 1px solid #ddd; background: white; margin-bottom: 5px; }
+    .accordion-item input { display: none; }
+    .accordion-header { display: block; padding: 15px; font-weight: bold; cursor: pointer; background: #f1f1f1; position: relative; }
+    .accordion-header::after { content: '+'; position: absolute; right: 20px; }
+    .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; background: white; }
+    .accordion-item input:checked ~ .accordion-content { max-height: 2000px; padding: 10px 0; }
+    .accordion-item input:checked ~ .accordion-header::after { content: '−'; }
+
+    /* Karten Styling */
+    .card-list { display: flex; flex-direction: column; gap: 10px; padding: 10px; align-items: center; }
+    .card-button { 
+        width: 100%; 
+        max-width: 450px;
+        background: white; 
+        border: 2px solid #ff0000; 
+        border-radius: 10px; 
+        padding: 15px; 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        cursor: pointer;
+        transition: transform 0.1s;
+    }
+    .card-button:active { transform: scale(0.98); }
+    .card-name { font-weight: bold; color: #333; }
+    .card-count { font-size: 0.9rem; color: #666; background: #f0f0f0; padding: 4px 8px; border-radius: 5px; }
+    .loading-info { font-style: italic; color: #888; padding: 10px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="dropdown">
+    <button class="dropbtn">☰</button>
+    <div class="dropdown-content">
+      <a href="FCEPTLogin.html">➜ Log out</a>
+      <a href="Pfingstturnierhome.html">Home</a>
+      <a href="PTInfos.html">Infos</a>
+    </div>
+  </div>
+
+  <div class="header-text">
+    <h1 id="groupTitle">Pfingstturnier 2026</h1>
+    <h2>Hallo, <span id="user-display-name">Gast</span>!</h2>
+    <h3 id="welcome-message"></h3>
+  </div>
+</div>
+
+<div class="accordion-container">
+
+    <div class="accordion-item">
+        <input type="checkbox" id="item1">
+        <label for="item1" class="accordion-header">Ich bringe</label>
+        <div class="accordion-content">
+            <div id="my-items-list" class="card-list">
+                <span class="loading-info">Lade deine Liste...</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="accordion-item">
+        <input type="checkbox" id="item3">
+        <label for="item3" class="accordion-header">Meine Dienste</label>
+        <div class="accordion-content">
+            <div class="card-list">
+                <p>Noch keine Dienste zugewiesen.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="accordion-item">
+        <input type="checkbox" id="item2">
+        <label for="item2" class="accordion-header">Offene Bring-Liste</label>
+        <div class="accordion-content">
+            <div id="open-items-list" class="card-list">
+                <span class="loading-info">Lade verfügbare Sachen...</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="accordion-item">
+        <input type="checkbox" id="item4">
+        <label for="item4" class="accordion-header">Offene Dienste</label>
+        <div class="accordion-content">
+            <div class="card-list">
+                <p>Dienstplan folgt.</p>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="accordion-item">
+        <input type="checkbox" id="item5">
+        <label for="item5" class="accordion-header">Team-Statistik</label>
+        <div class="accordion-content">
+            <div style="padding: 20px;">
+                <canvas id="teamChart" width="400" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="admin-area" style="text-align: center; display: none; margin-bottom: 20px;">
+    <button class="admin-btn" onclick="document.getElementById('addModal').style.display='block'">+ Neues Item hinzufügen</button>
+</div>
+
+<div id="addModal" class="modal">
+    <div class="modal-content">
+        <h3>Neues Item</h3>
+        <input type="text" id="newItemName" placeholder="Name (z.B. Nudelsalat)" style="width: 90%; padding: 8px; margin-bottom: 10px;">
+        <input type="number" id="newItemCount" placeholder="Anzahl" style="width: 90%; padding: 8px; margin-bottom: 10px;">
+        <button class="login-btn" onclick="saveNewItem()">Speichern</button>
+        <button class="secondary-btn" onclick="document.getElementById('addModal').style.display='none'">Abbrechen</button>
+    </div>
+</div>
+<script>
+    const supabaseUrl = 'https://qkmtybzdthrpjfkbgskw.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrbXR5YnpkdGhycGpma2Jnc2t3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4ODI3ODIsImV4cCI6MjA4MzQ1ODc4Mn0.VO1Bz0vKO4xTrcu-XCsZlrF4HgvgdbGLz3KKFRfG0Do';
+    const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+    const vorname = sessionStorage.getItem('userVorname');
+    const team = sessionStorage.getItem('gruppeName');
+    const userId = sessionStorage.getItem('userId');
+
+    // Initialisierung
+    // In der init() Funktion prüfen wir nun den Job-Status
+async function init() {
+    const userJob = sessionStorage.getItem('userJob');
+    
+    if (!vorname || !userId) {
+        window.location.href = 'index.html'; 
+        return;
+    }
+
+    // Admin-Button nur zeigen, wenn job == 2
+    if (userJob == "2") {
+        document.getElementById('admin-area').style.display = 'block';
+    }
+
+    document.getElementById('user-display-name').innerText = vorname;
+    document.getElementById('welcome-message').innerText = `Team: ${team}`;
+
+    await refreshLists();
+}
+
+// Funktion zum Speichern des neuen Items in PTListe
+async function saveNewItem() {
+    const name = document.getElementById('newItemName').value.trim();
+    const count = parseInt(document.getElementById('newItemCount').value);
+
+    if (!name || isNaN(count)) {
+        alert("Bitte Name und Anzahl korrekt ausfüllen.");
+        return;
+    }
+
+    const { error } = await supabaseClient
+        .from('PTListe')
+        .insert([{ Name: name, Anzahl: count }]);
+
+    if (error) {
+        alert("Fehler: " + error.message);
+    } else {
+        alert("Gegenstand hinzugefügt!");
+        document.getElementById('addModal').style.display = 'none';
+        document.getElementById('newItemName').value = "";
+        document.getElementById('newItemCount').value = "";
+        refreshLists(); // Listen und Statistik aktualisieren
+    }
+}
+
+   // Variable, um das Chart-Objekt zu speichern (verhindert doppeltes Zeichnen)
+let myChart = null;
+
+async function refreshLists() {
+    await loadMyItems();
+    await loadOpenList();
+    await updateStatistics(); // Neue Statistik-Funktion
+}
+
+async function updateStatistics() {
+    // 1. Daten holen: Wer bringt was (PTBring) und wer ist in welchem Team (Pfingstturnier)
+    const { data: bringData, error: bErr } = await supabaseClient.from('PTBring').select('Person');
+    const { data: userData, error: uErr } = await supabaseClient.from('Pfingstturnier').select('id, team');
+
+    if (bErr || uErr) return;
+
+    // 2. Zählen, wie viel jedes Team bringt
+    const stats = {
+        "C": 0,
+        "E(Wagner)": 0,
+        "E(Hauni)": 0,
+        "D": 0
+    };
+
+    bringData.forEach(item => {
+        const user = userData.find(u => u.id == item.Person);
+        if (user && stats.hasOwnProperty(user.team)) {
+            stats[user.team]++;
+        }
+    });
+
+    // 3. Chart zeichnen oder updaten
+    const ctx = document.getElementById('teamChart').getContext('2d');
+    
+    if (myChart) {
+        myChart.destroy(); // Altes Chart löschen, falls es existiert
+    }
+
+    myChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: Object.keys(stats),
+            datasets: [{
+                label: 'Anzahl mitgebrachter Sachen',
+                data: Object.values(stats),
+                backgroundColor: [
+                    'rgba(76, 175, 80, 0.6)',  // Grün
+                    'rgba(33, 150, 243, 0.6)', // Blau
+                    'rgba(255, 152, 0, 0.6)',  // Orange
+                    'rgba(156, 39, 176, 0.6)'  // Lila
+                ],
+                borderColor: [
+                    '#4CAF50', '#2196F3', '#FF9800', '#9C27B0'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 1 }
+                }
+            },
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+}
+
+    // 1. Eigene Sachen laden (Ich bringe)
+async function loadMyItems() {
+    const container = document.getElementById('my-items-list');
+    
+    const { data: myBringData, error: bringError } = await supabaseClient
+        .from('PTBring')
+        .select('*')
+        .eq('Person', userId);
+
+    const { data: allItems, error: listError } = await supabaseClient
+        .from('PTListe')
+        .select('*');
+
+    if (bringError || listError) {
+        container.innerHTML = "Fehler beim Laden.";
+        return;
+    }
+
+    if (myBringData.length === 0) {
+        container.innerHTML = "<p>Du hast noch nichts ausgewählt.</p>";
+        return;
+    }
+
+    container.innerHTML = "";
+    myBringData.forEach(entry => {
+        const itemInfo = allItems.find(i => i.id == entry.Item);
+        const displayName = itemInfo ? itemInfo.Name : "Unbekanntes Item (" + entry.Item + ")";
+
+        container.innerHTML += `
+            <button class="card-button" style="border-color: #28a745;" onclick="removeItem('${entry.id}')">
+                <span class="card-name">${displayName}</span>
+                <span class="card-count" style="color: #ff0000; border: 1px solid #ff0000;">Austragen</span>
+            </button>`;
+    });
+}
+
+    // 2. Offene Liste laden und berechnen
+    async function loadOpenList() {
+    const container = document.getElementById('open-items-list');
+    const { data: listData, error: listError } = await supabaseClient.from('PTListe').select('*');
+    const { data: bringData, error: bringError } = await supabaseClient.from('PTBring').select('Item');
+
+    if (listError || bringError) {
+        container.innerHTML = "Fehler beim Laden.";
+        return;
+    }
+
+    container.innerHTML = "";
+    listData.forEach(item => {
+        // Zähle, wie oft die ID dieses Items in PTBring vorkommt
+        const countTaken = bringData.filter(b => b.Item == item.id).length;
+        const remaining = item.Anzahl - countTaken;
+
+        if (remaining > 0) {
+            container.innerHTML += `
+                <button class="card-button" onclick="claimItem(${item.id})">
+                    <span class="card-name">${item.Name}</span>
+                    <span class="card-count">Noch ${remaining} benötigt</span>
+                </button>`;
+        }
+    });
+}
+
+    // Funktion: Item übernehmen
+async function claimItem(itemId) {
+    const { error } = await supabaseClient
+        .from('PTBring')
+        .insert([{ Item: itemId, Person: userId }]); // itemId ist jetzt eine Zahl
+
+    if (error) {
+        alert("Fehler beim Eintragen: " + error.message);
+    } else {
+        refreshLists();
+    }
+}
+
+    // Funktion: Item entfernen
+    async function removeItem(recordId) {
+        if (!confirm("Möchtest du dich wirklich austragen?")) return;
+
+        const { error } = await supabaseClient
+            .from('PTBring')
+            .delete()
+            .eq('id', recordId);
+
+        if (error) {
+            alert("Fehler beim Löschen: " + error.message);
+        } else {
+            refreshLists();
+        }
+    }
+
+    init();
+</script>
+</body>
+</html>

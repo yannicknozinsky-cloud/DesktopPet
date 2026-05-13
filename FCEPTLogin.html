@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Gruppen Login & Registrierung</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: system-ui, sans-serif; text-align:center; margin-top:30px; line-height: 1.6; background-color: #f9f9f9; }
+        .container { max-width: 400px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        input, select { padding:12px; font-size:16px; width:100%; margin-bottom: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        button { padding:12px 15px; font-size:16px; cursor: pointer; width: 100%; margin-top: 5px; border-radius: 4px; border: none; font-weight: bold; }
+        .login-btn { background-color: #4CAF50; color: white; }
+        .register-btn { background-color: #2196F3; color: white; }
+        .secondary-btn { background-color: #eee; color: #333; margin-top: 15px; border: 1px solid #ccc; }
+        .hidden { display: none; }
+        hr { margin: 20px 0; border: 0; border-top: 1px solid #eee; }
+        h1 { color: #333; }
+
+
+        
+    </style>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<div class="container">
+    <h1 id="form-title">Login</h1>
+    
+    <input type="text" id="name" placeholder="Vorname">
+    <input type="text" id="lastname" placeholder="Nachname">
+    
+    <div id="register-fields" class="hidden">
+        <input type="text" id="kindname" placeholder="Vorname des Kindes">
+        <select id="team">
+            <option value="" disabled selected>Team wählen...</option>
+            <option value="C">C</option>
+            <option value="E(Wagner)">E(Wagner)</option>
+            <option value="E(Hauni)">E(Hauni)</option>
+            <option value="D">D</option>
+        </select>
+    </div>
+
+    <input type="password" id="password" placeholder="Passwort">
+    
+    <button id="btn-login" onclick="login()" class="login-btn">Anmelden</button>
+    <button id="btn-register-submit" onclick="register()" class="register-btn hidden">Account jetzt erstellen</button>
+    
+    <hr>
+    
+    <div id="toggle-container">
+        <p id="toggle-text">Noch kein Konto?</p>
+        <button id="btn-toggle" onclick="toggleView()" class="secondary-btn">Account erstellen</button>
+    </div>
+</div>
+
+<script>
+const supabaseUrl = 'https://qkmtybzdthrpjfkbgskw.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrbXR5YnpkdGhycGpma2Jnc2t3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4ODI3ODIsImV4cCI6MjA4MzQ1ODc4Mn0.VO1Bz0vKO4xTrcu-XCsZlrF4HgvgdbGLz3KKFRfG0Do';
+const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+let isRegisterMode = false;
+
+function toggleView() {
+    isRegisterMode = !isRegisterMode;
+    
+    const regFields = document.getElementById('register-fields');
+    const btnLogin = document.getElementById('btn-login');
+    const btnRegSubmit = document.getElementById('btn-register-submit');
+    const btnToggle = document.getElementById('btn-toggle');
+    const toggleText = document.getElementById('toggle-text');
+    const title = document.getElementById('form-title');
+
+    if (isRegisterMode) {
+        title.innerText = "Registrierung";
+        regFields.classList.remove('hidden');
+        btnLogin.classList.add('hidden');
+        btnRegSubmit.classList.remove('hidden');
+        btnToggle.innerText = "Zurück zum Login";
+        toggleText.innerText = "Bereits registriert?";
+    } else {
+        title.innerText = "Login";
+        regFields.classList.add('hidden');
+        btnLogin.classList.remove('hidden');
+        btnRegSubmit.classList.add('hidden');
+        btnToggle.innerText = "Account erstellen";
+        toggleText.innerText = "Noch kein Konto?";
+    }
+}
+
+async function register() {
+    const vorname = document.getElementById('name').value.trim();
+    const nachname = document.getElementById('lastname').value.trim();
+    const team = document.getElementById('team').value;
+    const pw = document.getElementById('password').value.trim();
+    const kindname = document.getElementById('kindname').value.trim();
+
+    if(!vorname || !nachname || !team || !pw || !kindname) {
+        alert('Bitte alle Felder ausfüllen!');
+        return;
+    }
+
+    const { data, error } = await supabaseClient
+        .from('Pfingstturnier')
+        .insert([{ 
+            vorname: vorname, 
+            nachname: nachname, 
+            team: team, 
+            pwd: pw,
+            job: 1,
+            kindname: kindname
+        }]);
+
+    if (error) {
+        alert('Fehler: ' + error.message);
+    } else {
+        alert('Erfolgreich registriert! Bitte logge dich nun ein.');
+        toggleView(); // Zurück zum Login
+    }
+}
+
+async function login(){
+    const pw = document.getElementById('password').value.trim();
+    const vorname = document.getElementById('name').value.trim();
+    const nachname = document.getElementById('lastname').value.trim();
+
+
+    if(!pw || !vorname || !nachname){ 
+        alert('Bitte Vorname, Nachname und Passwort eingeben'); 
+        return; 
+    }
+
+    const { data, error } = await supabaseClient
+        .from('Pfingstturnier')
+        .select('*')
+        .eq('vorname', vorname)
+        .eq('nachname', nachname)
+        .eq('pwd', pw)
+        .single();
+
+    if(error || !data){
+        alert('Login fehlgeschlagen. Daten prüfen!');
+        return;
+    }
+
+    // Erfolg: Daten speichern und weiterleiten
+    sessionStorage.setItem('userId', data.id);
+    sessionStorage.setItem('gruppeName', data.team); 
+    sessionStorage.setItem('userVorname', data.vorname);
+    sessionStorage.setItem('loginTime', Date.now());
+    sessionStorage.setItem('userJob', data.job);
+    window.location.href = 'Pfingstturnierhome.html';
+}
+</script>
+</body>
+</html>
