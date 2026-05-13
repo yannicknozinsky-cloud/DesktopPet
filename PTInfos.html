@@ -133,9 +133,10 @@ th, td { padding:8px; text-align:center; border:1px solid #ddd; }
     }
 
     /* WENN die Checkbox aktiviert ist, zeige den Text */
-    .accordion-item input:checked ~ .accordion-content {
-        max-height: 500px; /* Genug Platz für langen Text */
-    }
+  /* Ändere diesen Block in deinem Style-Bereich: */
+.accordion-item input:checked ~ .accordion-content {
+    max-height: 2000px; /* Erhöht, damit nichts mehr abgeschnitten wird */
+}
 
     /* Icon ändern wenn offen */
     .accordion-item input:checked ~ .accordion-header::after {
@@ -148,19 +149,152 @@ th, td { padding:8px; text-align:center; border:1px solid #ddd; }
 <div class="accordion-container">
     <h2>Turnier Infos</h2>
 
-    <div class="accordion-item">
-        <input type="checkbox" id="item1">
-        <label for="item1" class="accordion-header">Ablauf</label>
-        <div class="accordion-content">
-            <p>Hier steht ein sehr langer Text über die Regeln des Pfingstturniers. Da dieser Bereich "ausklappt", rutschen alle anderen Punkte einfach nach unten, genau wie in einer Tabelle oder Liste. Du kannst hier beliebig viel schreiben.</p>
+
+  <div class="accordion-item">
+    <input type="checkbox" id="item10"> <label for="item10" class="accordion-header">Disclaimer</label>
+    <div class="accordion-content">
+        <div style="padding: 0 15px 15px 15px;">
+            
+            <p>Ich bin Informatik/Robotik Student, Rechtschreibung ist kack**, Sorry</p>
+           
+
         </div>
     </div>
+</div>
+
+
+
+    <div class="accordion-item">
+    <input type="checkbox" id="item10"> <label for="item10" class="accordion-header">Ablauf</label>
+    <div class="accordion-content">
+        <div style="padding: 0 15px 15px 15px;">
+            
+            <h3 style="color: #333; border-bottom: 2px solid #333; margin-top: 20px;">Freitag</h3>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 8px; font-weight: bold; width: 80px;">15:00</td>
+                    <td style="padding: 8px;">Anreise, abgabe aller Materialien, Zeltaufbau</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 8px; font-weight: bold;">18:00</td>
+                    <td style="padding: 8px;">Gemeinsames Abendessen - es wird gegrillt</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 8px; font-weight: bold;">22:00</td>
+                    <td style="padding: 8px;">Nachtruhe</td>
+                </tr>
+            </table>
+
+            <h3 style="color: #333; border-bottom: 2px solid #333; margin-top: 20px;">Samstag</h3>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 8px; font-weight: bold; width: 80px;">ca 08:00</td>
+                    <td style="padding: 8px;">Frühstück</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 8px; font-weight: bold;">08:30</td>
+                    <td style="padding: 8px;">Turnierbeginn</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 8px; font-weight: bold;">20:00</td>
+                    <td style="padding: 8px;">Eröffnungsfeier</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 8px; font-weight: bold;">18:00</td>
+                    <td style="padding: 8px;">Abendessen - Pizza</td>
+                </tr>
+                 <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 8px; font-weight: bold;">22:00</td>
+                    <td style="padding: 8px;">Nachtruhe</td>
+                </tr>
+            </table>
+
+            <h3 style="color: #333; border-bottom: 2px solid #333; margin-top: 20px;">Sonntag</h3>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 8px; font-weight: bold; width: 80px;">ca 08:00</td>
+                    <td style="padding: 8px;">Frühstück</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 8px; font-weight: bold;">08:30</td>
+                    <td style="padding: 8px;">Turnierbeginn</td>
+                </tr>
+            
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 8px; font-weight: bold;">19:00</td>
+                    <td style="padding: 8px;">Abendessen - Grillen</td>
+                </tr>
+                 <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 8px; font-weight: bold;">22:00</td>
+                    <td style="padding: 8px;">Nachtruhe</td>
+                </tr>
+            </table>
+
+            <h3 style="color: #333; border-bottom: 2px solid #333; margin-top: 20px;">Montag</h3>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 8px; font-weight: bold; width: 80px;">ca 08:00</td>
+                    <td style="padding: 8px;">Frühstück</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 8px; font-weight: bold;">08:30</td>
+                    <td style="padding: 8px;">Turnierbeginn</td>
+                </tr>
+            
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 8px; font-weight: bold;">15:00</td>
+                    <td style="padding: 8px;">Abbau</td>
+                </tr>
+
+                 <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 8px; font-weight: bold;">15:30</td>
+                    <td style="padding: 8px;">Siegerehrung</td>
+                </tr>
+
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 8px; font-weight: bold;">16:30</td>
+                    <td style="padding: 8px;">Endlich Duschen die Kinder Zuhause</td>
+                </tr>
+                 
+            </table>
+
+        </div>
+    </div>
+</div>
 
     <div class="accordion-item">
         <input type="checkbox" id="item2">
         <label for="item2" class="accordion-header">Verpflegung</label>
         <div class="accordion-content">
-            <p>Es gibt Bratwurst, Pommes und Kaltgetränke. Die Preise sind moderat. Der Kiosk öffnet täglich ab 09:00 Uhr und schließt nach dem letzten Spiel der Gruppe D.</p>
+            
+            <h3 style="color: #333; border-bottom: 2px solid #333; margin-top: 20px;">Essen</h3>
+            <p>
+                Die Kinder bekommen vor Ort jeden Tag Frühstück und Mittagessen.
+                In der Früh gibt es immer Semmeln mit Schoko/Käse/... dazu Tee oder Schokomilch.
+                Mittags wird immer ordentlich gekocht, hier kann man Begetarisch oder mit Fleisch essen.
+                Abends versorgen wir uns selber, hier wird Freitags und Sonntags jeweils gegrillt, dazu müssen die Kinder ihr eigenes Essen, Teller und Besteck dabei haben.
+                Eltern sind herzlich eingeladen mit zu grillen - stärkt die FCE Gemeinsaft.
+                Am Samstag werden wir Abends Pizza bestellen, hierfür bracuht jedes Kind das mitessen mag, 5 Euro.
+            </p>
+            <h3 style="color: #333; border-bottom: 2px solid #333; margin-top: 20px;">Was kleines Zwischendurch</h3>
+            <p>
+                Vor Ort kann man zwischendurch immer Pommes oder Grillsemmeln kaufen, außerdem gibt es viel Süßkram und Eis.
+                Wir werden einen Obstdienst haben, dementsprechend wird es auch jeden Tag kostenlos Obst für die Kinder in unserem Zelt geben.
+              </p>
+
+              <h3 style="color: #333; border-bottom: 2px solid #333; margin-top: 20px;">Durst?</h3>
+            <p>
+                Der Christian kümmert sich um einen Kühlwagen, in dem es alle Getränke die das Herz begehrt geben wird- ja liebe Väter, auch Bier, aber bitte net zu viel.
+                Die Kinder können sich also unter Berücksichtigung von ein paar Regeln, sich dort jederzeit bedienen.
+                Falls Eltern oder Geschwister sich Getränke nehmen wollen, seit ihr dazu natürlich herzlich eingeladen, allerdings werden diese Getränke am Ende über auch abgerechnet- mehr dazu in den Regeln.
+                 </p>
+
+             <h3 style="color: #333; border-bottom: 2px solid #333; margin-top: 20px;">Stockbrot</h3>
+            <p>
+                Wie jedes Jahr wird es auch an einem oder 2 Abenden wieder Stockbrot geben, wahlweise auch Marschmallows.
+                  </p>
+
+            
         </div>
     </div>
 
@@ -168,7 +302,18 @@ th, td { padding:8px; text-align:center; border:1px solid #ddd; }
         <input type="checkbox" id="item3">
         <label for="item3" class="accordion-header">Anfahrt & Parken</label>
         <div class="accordion-content">
-            <p>Bitte nutzt die Parkplätze am Waldstadion. Von dort aus sind es nur 5 Minuten Fußweg zu den Plätzen C und E. Achtung: Die Hauptstraße ist teilweise gesperrt.</p>
+            <h3 style="color: #333; border-bottom: 2px solid #333; margin-top: 20px;">Aufbau</h3>
+            <p>
+                Für den Aufbau kann man theoretisch auf den Platz mit dem Auto fahren, da es aber immer MEGA den Stau gibt und die meisten nur ein
+                Zelt und 1-2 Taschen tragen müssen, Parkt ihr bitte auf dem Parkplatz in der Jesenwang Straße- da ist ein Feld zum Parken. Ihr müsst in Mammendorf einfach an der Kreuzung von der Feuerwehr von der B2 runter biegen.
+                Habt ihr was großes, schweres könnt ihr gerne kurz auf den Platz fahren und das Zeug abliefern.
+
+                   </p>
+
+                   <h3 style="color: #333; border-bottom: 2px solid #333; margin-top: 20px;">Besucher</h3>
+            <p>
+                Besucher müssen immer auf dem Parkplatz in der Jesenwanger Str. Parken und das Stück zu Fuß gehen.
+                   </p>
         </div>
     </div>
 
@@ -176,7 +321,7 @@ th, td { padding:8px; text-align:center; border:1px solid #ddd; }
         <input type="checkbox" id="item4">
         <label for="item4" class="accordion-header">Packliste</label>
         <div class="accordion-content">
-            <p>Bitte nutzt die Parkplätze am Waldstadion. Von dort aus sind es nur 5 Minuten Fußweg zu den Plätzen C und E. Achtung: Die Hauptstraße ist teilweise gesperrt.</p>
+            <p>Folgt....</p>
         </div>
     </div>
 
@@ -184,7 +329,7 @@ th, td { padding:8px; text-align:center; border:1px solid #ddd; }
         <input type="checkbox" id="item5">
         <label for="item5" class="accordion-header">Regeln für Klein und Groß</label>
         <div class="accordion-content">
-            <p>Bitte nutzt die Parkplätze am Waldstadion. Von dort aus sind es nur 5 Minuten Fußweg zu den Plätzen C und E. Achtung: Die Hauptstraße ist teilweise gesperrt.</p>
+            <p>Folgt...</p>
         </div>
     </div>
 

@@ -91,14 +91,15 @@
     </div>
 
     <div class="accordion-item">
-        <input type="checkbox" id="item3">
-        <label for="item3" class="accordion-header">Meine Dienste</label>
-        <div class="accordion-content">
-            <div class="card-list">
-                <p>Noch keine Dienste zugewiesen.</p>
-            </div>
+    <input type="checkbox" id="item3">
+    <label for="item3" class="accordion-header">Meine Dienste</label>
+    <div class="accordion-content">
+        <div id="my-services-list" class="card-list"> <p>Lade Dienste...</p>
         </div>
     </div>
+</div>
+
+
 
     <div class="accordion-item">
         <input type="checkbox" id="item2">
@@ -110,12 +111,21 @@
         </div>
     </div>
 
+<div class="accordion-item">
+    <input type="checkbox" id="item4">
+    <label for="item4" class="accordion-header">Offene Dienste</label>
+    <div class="accordion-content">
+        <div id="open-services-list" class="card-list"> <p>Dienstplan folgt.</p>
+        </div>
+    </div>
+</div>
+
     <div class="accordion-item">
-        <input type="checkbox" id="item4">
-        <label for="item4" class="accordion-header">Offene Dienste</label>
+        <input type="checkbox" id="item6">
+        <label for="item6" class="accordion-header">Komplette Liste</label>
         <div class="accordion-content">
-            <div class="card-list">
-                <p>Dienstplan folgt.</p>
+             <div id="total-items-list" class="card-list">
+                <span class="loading-info">Lade verfügbare Sachen...</span>
             </div>
         </div>
     </div>
@@ -133,8 +143,27 @@
     </div>
 </div>
 
-<div id="admin-area" style="text-align: center; display: none; margin-bottom: 20px;">
+<div id="admin-area" style="text-align: center; display: none; margin-bottom: 10px;">
     <button class="admin-btn" onclick="document.getElementById('addModal').style.display='block'">+ Neues Item hinzufügen</button>
+</div>
+
+<div id="admin-area-dienste" style="text-align: center; display: none; margin-bottom: 20px;">
+    <button class="admin-btn" style="background-color: #2196F3;" onclick="document.getElementById('serviceModal').style.display='block'">+ Neuen Dienst hinzufügen</button>
+</div>
+
+<div id="serviceModal" class="modal">
+    <div class="modal-content">
+        <h3>Neuer Dienst</h3>
+        <input type="text" id="newServiceName" placeholder="Dienst Name (z.B. Grillen)">
+        <select id="newServiceDay">
+            <option value="Freitag">Freitag</option>
+            <option value="Samstag">Samstag</option>
+            <option value="Sonntag">Sonntag</option>
+            <option value="Montag">Montag</option>
+        </select>
+        <button class="login-btn" onclick="saveNewService()">Speichern</button>
+        <button class="secondary-btn" onclick="document.getElementById('serviceModal').style.display='none'">Abbrechen</button>
+    </div>
 </div>
 
 <div id="addModal" class="modal">
@@ -147,159 +176,71 @@
     </div>
 </div>
 <script>
-    const supabaseUrl = 'https://qkmtybzdthrpjfkbgskw.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrbXR5YnpkdGhycGpma2Jnc2t3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4ODI3ODIsImV4cCI6MjA4MzQ1ODc4Mn0.VO1Bz0vKO4xTrcu-XCsZlrF4HgvgdbGLz3KKFRfG0Do';
-    const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+ const supabaseUrl = 'https://qkmtybzdthrpjfkbgskw.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrbXR5YnpkdGhycGpma2Jnc2t3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4ODI3ODIsImV4cCI6MjA4MzQ1ODc4Mn0.VO1Bz0vKO4xTrcu-XCsZlrF4HgvgdbGLz3KKFRfG0Do';
+const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-    const vorname = sessionStorage.getItem('userVorname');
-    const team = sessionStorage.getItem('gruppeName');
-    const userId = sessionStorage.getItem('userId');
+const vorname = sessionStorage.getItem('userVorname');
+const team = sessionStorage.getItem('gruppeName');
+const userId = sessionStorage.getItem('userId');
+const userJob = sessionStorage.getItem('userJob'); // Job hier zentral holen
 
-    // Initialisierung
-    // In der init() Funktion prüfen wir nun den Job-Status
+let myChart = null;
+
+// Initialisierung
 async function init() {
-    const userJob = sessionStorage.getItem('userJob');
-    
+    // Falls vorname oder userId fehlen, zurück zum Login
     if (!vorname || !userId) {
         window.location.href = 'index.html'; 
         return;
     }
 
-    // Admin-Button nur zeigen, wenn job == 2
-    if (userJob == "2") {
-        document.getElementById('admin-area').style.display = 'block';
+    // Admin-Buttons anzeigen, wenn job == 2
+    if (userJob === "2") {
+        const areaItems = document.getElementById('admin-area');
+        const areaDienste = document.getElementById('admin-area-dienste');
+        
+        if (areaItems) {
+            areaItems.style.display = 'block';
+        }
+        if (areaDienste) {
+            areaDienste.style.display = 'block';
+        }
     }
 
-    document.getElementById('user-display-name').innerText = vorname;
-    document.getElementById('welcome-message').innerText = `Team: ${team}`;
+    // Namen im Header setzen
+    const nameDisplay = document.getElementById('user-display-name');
+    const welcomeDisplay = document.getElementById('welcome-message');
+    
+    if (nameDisplay) nameDisplay.innerText = vorname;
+    if (welcomeDisplay) welcomeDisplay.innerText = `Team: ${team}`;
 
     await refreshLists();
 }
 
-// Funktion zum Speichern des neuen Items in PTListe
-async function saveNewItem() {
-    const name = document.getElementById('newItemName').value.trim();
-    const count = parseInt(document.getElementById('newItemCount').value);
-
-    if (!name || isNaN(count)) {
-        alert("Bitte Name und Anzahl korrekt ausfüllen.");
-        return;
-    }
-
-    const { error } = await supabaseClient
-        .from('PTListe')
-        .insert([{ Name: name, Anzahl: count }]);
-
-    if (error) {
-        alert("Fehler: " + error.message);
-    } else {
-        alert("Gegenstand hinzugefügt!");
-        document.getElementById('addModal').style.display = 'none';
-        document.getElementById('newItemName').value = "";
-        document.getElementById('newItemCount').value = "";
-        refreshLists(); // Listen und Statistik aktualisieren
-    }
-}
-
-   // Variable, um das Chart-Objekt zu speichern (verhindert doppeltes Zeichnen)
-let myChart = null;
-
 async function refreshLists() {
     await loadMyItems();
     await loadOpenList();
-    await updateStatistics(); // Neue Statistik-Funktion
+    await loadTotalList();
+    await updateStatistics();
+    await loadMyServices();
+    await loadOpenServices();
 }
 
-async function updateStatistics() {
-    // 1. Daten holen: Wer bringt was (PTBring) und wer ist in welchem Team (Pfingstturnier)
-    const { data: bringData, error: bErr } = await supabaseClient.from('PTBring').select('Person');
-    const { data: userData, error: uErr } = await supabaseClient.from('Pfingstturnier').select('id, team');
+// --- ITEM LOGIK ---
 
-    if (bErr || uErr) return;
-
-    // 2. Zählen, wie viel jedes Team bringt
-    const stats = {
-        "C": 0,
-        "E(Wagner)": 0,
-        "E(Hauni)": 0,
-        "D": 0
-    };
-
-    bringData.forEach(item => {
-        const user = userData.find(u => u.id == item.Person);
-        if (user && stats.hasOwnProperty(user.team)) {
-            stats[user.team]++;
-        }
-    });
-
-    // 3. Chart zeichnen oder updaten
-    const ctx = document.getElementById('teamChart').getContext('2d');
-    
-    if (myChart) {
-        myChart.destroy(); // Altes Chart löschen, falls es existiert
-    }
-
-    myChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: Object.keys(stats),
-            datasets: [{
-                label: 'Anzahl mitgebrachter Sachen',
-                data: Object.values(stats),
-                backgroundColor: [
-                    'rgba(76, 175, 80, 0.6)',  // Grün
-                    'rgba(33, 150, 243, 0.6)', // Blau
-                    'rgba(255, 152, 0, 0.6)',  // Orange
-                    'rgba(156, 39, 176, 0.6)'  // Lila
-                ],
-                borderColor: [
-                    '#4CAF50', '#2196F3', '#FF9800', '#9C27B0'
-                ],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: { stepSize: 1 }
-                }
-            },
-            plugins: {
-                legend: { display: false }
-            }
-        }
-    });
-}
-
-    // 1. Eigene Sachen laden (Ich bringe)
 async function loadMyItems() {
     const container = document.getElementById('my-items-list');
-    
-    const { data: myBringData, error: bringError } = await supabaseClient
-        .from('PTBring')
-        .select('*')
-        .eq('Person', userId);
+    const { data: myBringData, error: bringError } = await supabaseClient.from('PTBring').select('*').eq('Person', userId);
+    const { data: allItems, error: listError } = await supabaseClient.from('PTListe').select('*');
 
-    const { data: allItems, error: listError } = await supabaseClient
-        .from('PTListe')
-        .select('*');
-
-    if (bringError || listError) {
-        container.innerHTML = "Fehler beim Laden.";
-        return;
-    }
-
-    if (myBringData.length === 0) {
-        container.innerHTML = "<p>Du hast noch nichts ausgewählt.</p>";
-        return;
-    }
+    if (bringError || listError) { container.innerHTML = "Fehler."; return; }
+    if (myBringData.length === 0) { container.innerHTML = "<p>Nichts ausgewählt.</p>"; return; }
 
     container.innerHTML = "";
     myBringData.forEach(entry => {
         const itemInfo = allItems.find(i => i.id == entry.Item);
-        const displayName = itemInfo ? itemInfo.Name : "Unbekanntes Item (" + entry.Item + ")";
-
+        const displayName = itemInfo ? itemInfo.Name : "Unbekannt";
         container.innerHTML += `
             <button class="card-button" style="border-color: #28a745;" onclick="removeItem('${entry.id}')">
                 <span class="card-name">${displayName}</span>
@@ -308,23 +249,15 @@ async function loadMyItems() {
     });
 }
 
-    // 2. Offene Liste laden und berechnen
-    async function loadOpenList() {
+async function loadOpenList() {
     const container = document.getElementById('open-items-list');
-    const { data: listData, error: listError } = await supabaseClient.from('PTListe').select('*');
-    const { data: bringData, error: bringError } = await supabaseClient.from('PTBring').select('Item');
-
-    if (listError || bringError) {
-        container.innerHTML = "Fehler beim Laden.";
-        return;
-    }
+    const { data: listData } = await supabaseClient.from('PTListe').select('*');
+    const { data: bringData } = await supabaseClient.from('PTBring').select('Item');
 
     container.innerHTML = "";
     listData.forEach(item => {
-        // Zähle, wie oft die ID dieses Items in PTBring vorkommt
         const countTaken = bringData.filter(b => b.Item == item.id).length;
         const remaining = item.Anzahl - countTaken;
-
         if (remaining > 0) {
             container.innerHTML += `
                 <button class="card-button" onclick="claimItem(${item.id})">
@@ -335,36 +268,141 @@ async function loadMyItems() {
     });
 }
 
-    // Funktion: Item übernehmen
 async function claimItem(itemId) {
-    const { error } = await supabaseClient
-        .from('PTBring')
-        .insert([{ Item: itemId, Person: userId }]); // itemId ist jetzt eine Zahl
-
-    if (error) {
-        alert("Fehler beim Eintragen: " + error.message);
-    } else {
-        refreshLists();
-    }
+    const { error } = await supabaseClient.from('PTBring').insert([{ Item: itemId, Person: userId }]);
+    if (error) alert(error.message); else refreshLists();
 }
 
-    // Funktion: Item entfernen
-    async function removeItem(recordId) {
-        if (!confirm("Möchtest du dich wirklich austragen?")) return;
+async function removeItem(recordId) {
+    if (!confirm("Austragen?")) return;
+    await supabaseClient.from('PTBring').delete().eq('id', recordId);
+    refreshLists();
+}
 
-        const { error } = await supabaseClient
-            .from('PTBring')
-            .delete()
-            .eq('id', recordId);
+async function saveNewItem() {
+    const name = document.getElementById('newItemName').value.trim();
+    const count = parseInt(document.getElementById('newItemCount').value);
+    if (!name || isNaN(count)) return;
+    await supabaseClient.from('PTListe').insert([{ Name: name, Anzahl: count }]);
+    document.getElementById('addModal').style.display = 'none';
+    refreshLists();
+}
 
-        if (error) {
-            alert("Fehler beim Löschen: " + error.message);
-        } else {
-            refreshLists();
-        }
+// --- DIENST LOGIK ---
+
+async function saveNewService() {
+    const name = document.getElementById('newServiceName').value.trim();
+    const tag = document.getElementById('newServiceDay').value;
+    if (!name) return;
+    await supabaseClient.from('PTDienste').insert([{ name: name, tag: tag }]);
+    document.getElementById('serviceModal').style.display = 'none';
+    refreshLists();
+}
+
+async function loadMyServices() {
+    const container = document.getElementById('my-services-list'); // Geänderte Zeile
+    if (!container) return;
+
+    const { data: myDo } = await supabaseClient.from('PTDoDienste').select('*').eq('person', userId);
+    const { data: allS } = await supabaseClient.from('PTDienste').select('*');
+
+    if (!myDo || myDo.length === 0) { 
+        container.innerHTML = "<p>Keine Dienste übernommen.</p>"; 
+        return; 
+    }
+    
+    container.innerHTML = "";
+    myDo.forEach(entry => {
+        const info = allS.find(s => s.id == entry.dienst);
+        const serviceName = info ? info.name : 'Unbekannt';
+        const serviceTag = info ? info.tag : '';
+        
+        container.innerHTML += `
+            <button class="card-button" style="border-color: #28a745;" onclick="removeService('${entry.id}')">
+                <span class="card-name">${serviceName} (${serviceTag})</span>
+                <span class="card-count" style="color: #28a745; border: 1px solid #28a745;">Austragen</span>
+            </button>`;
+    });
+}
+async function loadOpenServices() {
+    const container = document.getElementById('open-services-list'); // Geänderte Zeile
+    if (!container) return;
+
+    const { data: allS } = await supabaseClient.from('PTDienste').select('*');
+    const { data: takenS } = await supabaseClient.from('PTDoDienste').select('dienst');
+
+    if (!allS || allS.length === 0) {
+        container.innerHTML = "<p>Aktuell keine offenen Dienste.</p>";
+        return;
     }
 
-    init();
+    container.innerHTML = "";
+    allS.forEach(s => {
+        if (!takenS || !takenS.some(t => t.dienst == s.id)) {
+            container.innerHTML += `
+                <button class="card-button" onclick="claimService(${s.id})">
+                    <span class="card-name">${s.name} (${s.tag})</span>
+                    <span class="card-count">Übernehmen</span>
+                </button>`;
+        }
+    });
+}
+
+async function claimService(sId) {
+    await supabaseClient.from('PTDoDienste').insert([{ dienst: sId, person: userId }]);
+    refreshLists();
+}
+
+async function removeService(rId) {
+    await supabaseClient.from('PTDoDienste').delete().eq('id', rId);
+    refreshLists();
+}
+
+// --- SONSTIGES ---
+
+async function loadTotalList() {
+    const container = document.getElementById('total-items-list');
+    const { data: listData } = await supabaseClient.from('PTListe').select('*');
+    const { data: bringData } = await supabaseClient.from('PTBring').select('Item');
+
+    container.innerHTML = "";
+    listData.forEach(item => {
+        const count = bringData.filter(b => b.Item == item.id).length;
+        const isComplete = count >= item.Anzahl;
+        const color = isComplete ? "#28a745" : "#ff0000";
+        
+        if (isComplete) {
+            container.innerHTML += `<div class="card-button" style="border-color: ${color}; opacity: 0.7;"><span class="card-name">${item.Name}</span><span class="card-count">VOLL</span></div>`;
+        } else {
+            container.innerHTML += `<button class="card-button" style="border-color: ${color};" onclick="claimItem(${item.id})"><span class="card-name">${item.Name}</span><span class="card-count">${count}/${item.Anzahl}</span></button>`;
+        }
+    });
+}
+
+async function updateStatistics() {
+    const { data: bData } = await supabaseClient.from('PTBring').select('Person');
+    const { data: uData } = await supabaseClient.from('Pfingstturnier').select('id, team');
+    if (!bData || !uData) return;
+
+    const stats = { "C": 0, "E(Wagner)": 0, "E(Hauni)": 0, "D": 0 };
+    bData.forEach(b => {
+        const u = uData.find(user => user.id == b.Person);
+        if (u && stats[u.team] !== undefined) stats[u.team]++;
+    });
+
+    const ctx = document.getElementById('teamChart').getContext('2d');
+    if (myChart) myChart.destroy();
+    myChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: Object.keys(stats),
+            datasets: [{ label: 'Items', data: Object.values(stats), backgroundColor: '#4CAF50' }]
+        },
+        options: { scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+    });
+}
+
+init();
 </script>
 </body>
 </html>
