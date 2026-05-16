@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Pfingstturnier 2026 - Spielplan</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<style>
+    body { font-family: system-ui, sans-serif; margin:20px; background:#f7f7f7; }
+    
+    .header { display: flex; align-items: center; margin-bottom: 20px; padding-right: 40px; }
+    .header-text { flex-grow: 1; display: flex; flex-direction: column; text-align: center; }
+    .header-text h1 { font-size: 1.5rem; margin: 0; }
+
+    .dropbtn { background-color:#333; color:white; padding:8px 12px; font-size:16px; border:none; cursor:pointer; border-radius: 4px; }
+    .dropdown { position:relative; }
+    .dropdown-content { display:none; position:absolute; left:0; top:100%; background-color:white; min-width:160px; box-shadow:0 8px 16px rgba(0,0,0,0.2); z-index: 10; }
+    .dropdown-content a { color:black; padding:10px; text-decoration:none; display:block; }
+    .dropdown:hover .dropdown-content { display:block; }
+
+    .container { max-width: 600px; margin: 20px auto; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    
+    .admin-table { width: 100%; margin: 10px auto 25px auto; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
+    .admin-table th, .admin-table td { padding: 10px; border: 1px solid #ddd; }
+    .admin-table th { background-color: #f4f4f4; }
+    
+    .admin-btn { background-color: #333; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 10px; }
+    .result-btn { background-color: #ff9800; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; margin-left: 5px;}
+    
+    .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); overflow-y: auto; }
+    .modal-content { background-color: white; margin: 10% auto; padding: 20px; border-radius: 8px; width: 80%; max-width: 500px; text-align: center; }
+    .modal-content input, .modal-content select { width: 90%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; }
+    h4 { margin: 15px 0 5px 0; color: #2196F3; font-size: 1.2rem; border-bottom: 2px solid #2196F3; padding-bottom: 3px;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="dropdown">
+    <button class="dropbtn">☰</button>
+    <div class="dropdown-content">
+       <a href="FCEPTLogin.html">➜ Log out</a>
+      <a href="Pfingstturnierhome.html">Home</a>
+      <a href="PTInfos.html">Infos</a>
+    </div>
+  </div>
+
+  <div class="header-text">
+    <h1>🏆 Spielplan Pfingstturnier</h1>
+  </div>
+</div>
+
+<div class="container">
+    <div id="admin-area-spiele" style="text-align: center; display: none; margin-bottom: 20px;">
+        <button class="admin-btn" style="background-color: #e91e63;" onclick="document.getElementById('matchModal').style.display='block'">+ Spiel anlegen</button>
+    </div>
+    
+    <h4>Samstag</h4>
+    <table class="admin-table">
+        <thead>
+            <tr><th>Zeit</th><th>Team</th><th>Gegner</th><th>Ergebnis</th></tr>
+        </thead>
+        <tbody id="matches-samstag"><tr><td colspan="4" style="text-align:center;">Lade Spiele...</td></tr></tbody>
+    </table>
+
+    <h4>Sonntag</h4>
+    <table class="admin-table">
+        <thead>
+            <tr><th>Zeit</th><th>Team</th><th>Gegner</th><th>Ergebnis</th></tr>
+        </thead>
+        <tbody id="matches-sonntag"><tr><td colspan="4" style="text-align:center;">Lade Spiele...</td></tr></tbody>
+    </table>
+
+    <h4>Montag</h4>
+    <table class="admin-table">
+        <thead>
+            <tr><th>Zeit</th><th>Team</th><th>Gegner</th><th>Ergebnis</th></tr>
+        </thead>
+        <tbody id="matches-montag"><tr><td colspan="4" style="text-align:center;">Lade Spiele...</td></tr></tbody>
+    </table>
+</div>
+
+<div id="matchModal" class="modal">
+    <div class="modal-content">
+        <h3>Neues Spiel anlegen</h3>
+        <select id="matchTeam">
+            <option value="" disabled selected>-- Unser Team wählen --</option>
+            <option value="C">C</option>
+            <option value="D">D</option>
+            <option value="E(Wagner)">E(Wagner)</option>
+            <option value="E(Hauni)">E(Hauni)</option>
+        </select>
+        <input type="text" id="matchGegner" placeholder="Gegner">
+        <select id="matchTag">
+            <option value="Samstag">Samstag</option>
+            <option value="Sonntag">Sonntag</option>
+            <option value="Montag">Montag</option>
+        </select>
+        <input type="time" id="matchZeit">
+        <button class="admin-btn" style="background-color: #e91e63;" onclick="saveNewMatch()">Speichern</button>
+        <button class="admin-btn" style="background-color: #666;" onclick="document.getElementById('matchModal').style.display='none'">Abbrechen</button>
+    </div>
+</div>
+
+<div id="resultModal" class="modal">
+    <div class="modal-content">
+        <h3>Ergebnis eintragen</h3>
+        <p id="resultMatchInfo" style="font-weight: bold;"></p>
+        <input type="hidden" id="resultMatchId">
+        <div style="display: flex; justify-content: center; gap: 10px; align-items: center;">
+            <input type="number" id="resultHeim" placeholder="Heim" style="width: 70px; text-align: center;">
+            <span>:</span>
+            <input type="number" id="resultAus" placeholder="Auswärts" style="width: 70px; text-align: center;">
+        </div>
+        <button class="admin-btn" style="background-color: #ff9800;" onclick="saveResult()">Speichern</button>
+        <button class="admin-btn" style="background-color: #666;" onclick="document.getElementById('resultModal').style.display='none'">Abbrechen</button>
+    </div>
+</div>
+
+<script>
+const supabaseUrl = 'https://qkmtybzdthrpjfkbgskw.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrbXR5YnpkdGhycGpma2Jnc2t3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4ODI3ODIsImV4cCI6MjA4MzQ1ODc4Mn0.VO1Bz0vKO4xTrcu-XCsZlrF4HgvgdbGLz3KKFRfG0Do';
+const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+const userJob = sessionStorage.getItem('userJob'); 
+
+async function init() {
+    if (!sessionStorage.getItem('userId')) {
+        window.location.href = 'index.html';
+        return;
+    }
+
+    if (userJob === "2") {
+        const areaSpiele = document.getElementById('admin-area-spiele');
+        if (areaSpiele) areaSpiele.style.display = 'block';
+    }
+
+    await loadMatches();
+}
+
+async function loadMatches() {
+    const { data: matches, error } = await supabaseClient
+        .from('PTMatches')
+        .select('*')
+        .order('Zeit', { ascending: true });
+
+    if (error) { console.error("Fehler beim Laden:", error); return; }
+
+    const tage = ['Samstag', 'Sonntag', 'Montag'];
+    tage.forEach(tag => {
+        const tbody = document.getElementById(`matches-${tag.toLowerCase()}`);
+        if (!tbody) return;
+        tbody.innerHTML = "";
+
+        const tagMatches = matches ? matches.filter(m => m['Tag'] === tag) : [];
+
+        if (tagMatches.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#888;">Keine Spiele für diesen Tag</td></tr>`;
+            return;
+        }
+
+        tagMatches.forEach(m => {
+            const zeitFormatiert = m['Zeit'] ? m['Zeit'].substring(0, 5) : '-';
+            
+            // Wenn kein Ergebnis da ist, bleibt das Feld komplett leer
+            let ergebnisText = "";
+            if (m['ErgebnisHeim'] !== null && m['ErgebnisAus'] !== null) {
+                ergebnisText = `${m['ErgebnisHeim']} : ${m['ErgebnisAus']}`;
+            }
+
+            let actionBtn = "";
+            if (userJob === "2") {
+                actionBtn = `<button class="result-btn" onclick="openResultModal('${m.id}', '${m['Team']}', '${m['Gegner']}', '${m['ErgebnisHeim']}', '${m['ErgebnisAus']}')">Ergebnis</button>`;
+            }
+
+            tbody.innerHTML += `
+                <tr>
+                    <td><b>${zeitFormatiert}</b></td>
+                    <td>${m['Team'] || ''}</td>
+                    <td>${m['Gegner'] || ''}</td>
+                    <td>${ergebnisText} ${actionBtn}</td>
+                </tr>`;
+        });
+    });
+}
+
+async function saveNewMatch() {
+    const teamTxt = document.getElementById('matchTeam').value;
+    const gegnerTxt = document.getElementById('matchGegner').value.trim();
+    const tagTxt = document.getElementById('matchTag').value;
+    const zeitTime = document.getElementById('matchZeit').value;
+
+    if (!teamTxt || !gegnerTxt || !zeitTime) {
+        alert("Bitte fülle alle Pflichtfelder aus (Inklusive Teamauswahl).");
+        return;
+    }
+
+    const { error } = await supabaseClient.from('PTMatches').insert([{
+        'Team': teamTxt,
+        'Gegner': gegnerTxt,
+        'Tag': tagTxt,
+        'Zeit': zeitTime
+    }]);
+
+    if (error) { alert(error.message); } else {
+        document.getElementById('matchModal').style.display = 'none';
+        document.getElementById('matchTeam').selectedIndex = 0;
+        document.getElementById('matchGegner').value = '';
+        document.getElementById('matchZeit').value = '';
+        await loadMatches();
+    }
+}
+
+function openResultModal(id, heimName, ausName, heimTore, ausTore) {
+    document.getElementById('resultMatchId').value = id;
+    document.getElementById('resultMatchInfo').innerText = `${heimName} vs. ${ausName}`;
+    document.getElementById('resultHeim').value = (heimTore !== 'null' && heimTore !== null) ? heimTore : '';
+    document.getElementById('resultAus').value = (ausTore !== 'null' && ausTore !== null) ? ausTore : '';
+    document.getElementById('resultModal').style.display = 'block';
+}
+
+async function saveResult() {
+    const id = document.getElementById('resultMatchId').value;
+    const heimVal = document.getElementById('resultHeim').value;
+    const ausVal = document.getElementById('resultAus').value;
+
+    if (heimVal === "" || ausVal === "") {
+        alert("Bitte trage Werte für beide Teams ein.");
+        return;
+    }
+
+    const { error } = await supabaseClient
+        .from('PTMatches')
+        .update({
+            'ErgebnisHeim': parseInt(heimVal),
+            'ErgebnisAus': parseInt(ausVal)
+        })
+        .eq('id', id);
+
+    if (error) { alert(error.message); } else {
+        document.getElementById('resultModal').style.display = 'none';
+        await loadMatches();
+    }
+}
+
+init();
+</script>
+</body>
+</html>
