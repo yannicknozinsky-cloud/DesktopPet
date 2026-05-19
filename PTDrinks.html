@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Pfingstturnier 2026 - Getränke</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<style>
+    /* Grund-Styling */
+    body { font-family: system-ui, sans-serif; margin:20px; background:#f7f7f7; }
+    
+    /* Header & Navigation */
+    .header { display: flex; align-items: center; margin-bottom: 20px; padding-right: 40px; }
+    .header-text { flex-grow: 1; display: flex; flex-direction: column; text-align: center; }
+    .header-text h1 { font-size: 1.5rem; margin: 0; }
+    .header-text h2 { font-size: 1.1rem; color: #555; margin: 0; display: flex; justify-content: center; align-items: center; gap: 8px; }
+    .header-text h3 { font-size: 1rem; color: #333; font-weight: normal; margin: 0; }
+
+    .header-status-badge { font-size: 0.8rem; padding: 2px 8px; border-radius: 10px; color: white; font-weight: bold; }
+    .badge-allowed { background-color: #28a745; }
+    .badge-denied { background-color: #dc3545; }
+
+    .dropbtn { background-color:#333; color:white; padding:8px 12px; font-size:16px; border:none; cursor:pointer; border-radius: 4px; }
+    .dropdown { position:relative; }
+    .dropdown-content { display:none; position:absolute; left:0; top:100%; background-color:white; min-width:160px; box-shadow:0 8px 16px rgba(0,0,0,0.2); z-index: 10; }
+    .dropdown-content a { color:black; padding:10px; text-decoration:none; display:block; }
+    .dropdown:hover .dropdown-content { display:block; }
+
+    /* Container */
+    .drink-container { max-width: 600px; margin: 20px auto; text-align: center; }
+    
+    /* Player Status Screen */
+    .status-screen { padding: 40px 20px; border-radius: 15px; color: white; font-size: 1.8rem; font-weight: bold; margin-top: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    .status-allowed { background-color: #28a745; border: 3px solid #1e7e34; }
+    .status-denied { background-color: #dc3545; border: 3px solid #bd2130; }
+    .counter-badge { display: inline-block; background: rgba(0,0,0,0.2); padding: 5px 15px; border-radius: 20px; font-size: 1.1rem; margin-top: 15px; }
+
+    /* Accordion-Styling */
+    .accordion-item { border: 1px solid #ddd; border-radius: 5px; margin-bottom: 8px; overflow: hidden; background: white; text-align: left; }
+    .accordion-header { padding: 12px 15px; font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; user-select: none; align-items: center; }
+    .accordion-header:hover { background: #e0e0e0; }
+    .accordion-content { display: none; padding: 15px; background: #fafafa; border-top: 1px solid #ddd; }
+
+    /* Verschachteltes Team-Accordion im Adminbereich */
+    .sub-accordion { margin-bottom: 6px; border: 1px solid #eee; }
+    .sub-header { background: #f0f0f0; padding: 8px 12px; font-size: 0.95rem; color: #444; }
+
+    /* Farbliche Akzente für Haupt-Accordions */
+    .header-denied { background: #fde8e8; color: #dc3545; border-left: 5px solid #dc3545; }
+    .header-allowed { background: #eafaf1; color: #28a745; border-left: 5px solid #28a745; }
+
+    /* Listen-Elemente */
+    .drink-list { display: flex; flex-direction: column; gap: 8px; }
+    .drink-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: white; border: 1px solid #eee; border-radius: 6px; }
+    .drink-item-info { display: flex; flex-direction: column; }
+    .drink-item-name { font-weight: bold; color: #333; font-size: 0.95rem; }
+    .drink-item-sub { font-size: 0.8rem; color: #666; }
+
+    .action-group { display: flex; gap: 5px; }
+    .action-btn { padding: 6px 10px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; color: white; transition: background 0.2s; font-size: 0.85rem; }
+    .btn-allow { background-color: #28a745; }
+    .btn-allow:hover { background-color: #218838; }
+    .btn-deny { background-color: #dc3545; }
+    .btn-deny:hover { background-color: #c82333; }
+    .btn-plus { background-color: #007bff; }
+    .btn-plus:hover { background-color: #0069d9; }
+    
+    .loading-info { font-style: italic; color: #888; text-align: center; padding: 10px; display: block; }
+
+    /* Team-Übersicht ganz unten */
+    .team-overview-section { max-width: 600px; margin: 30px auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-align: left; }
+    .team-overview-section h2 { font-size: 1.3rem; margin-top: 0; border-bottom: 2px solid #333; padding-bottom: 5px; color: #333; }
+    
+    .team-overview-section table { width: 100%; border-collapse: collapse; }
+    .team-overview-section th, .team-overview-section td { padding: 6px 8px; text-align: left; border-bottom: 1px solid #eee; }
+    .team-overview-section th { font-size: 0.9rem; color: #666; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="dropdown">
+    <button class="dropbtn">☰</button>
+    <div class="dropdown-content">
+      <a href="FCEPTLogin.html">➜ Log out</a>
+      <a href="PTInfos.html">Infos</a>
+      <a href="PTSpiele.html">⚽ Unsere Spiele</a>
+      <a href="Pfingstturnierhome.html">HOME</a>
+    </div>
+  </div>
+
+  <div class="header-text">
+    <h1 id="groupTitle">Pfingstturnier 2026</h1>
+    <h2>Hallo, <span id="user-display-name">Gast</span>! <span id="header-status" class="header-status-badge"></span></h2>
+    <h3 id="welcome-message"></h3>
+  </div>
+</div>
+
+<div class="drink-container">
+    <div id="view-player" style="display: none;">
+        <div id="drink-status-screen" class="status-screen status-denied">
+            <span id="drink-status-text">Lade Status...</span>
+            <br>
+            <div id="drink-counter-info" class="counter-badge" style="display:none;">
+                Freigaben insgesamt: <span id="my-drink-count">0</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-admin" style="display: none;">
+        
+        <div class="accordion-item">
+            <div class="accordion-header header-denied" onclick="toggleAccordion(this)">
+                <span>🔴 Nicht freigegeben (Warten auf Getränk)</span>
+                <span>▼</span>
+            </div>
+            <div class="accordion-content" id="nested-denied-container">
+                <span class="loading-info">Lade Teams...</span>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <div class="accordion-header header-allowed" onclick="toggleAccordion(this)">
+                <span>🟢 Für heute freigegeben</span>
+                <span>▼</span>
+            </div>
+            <div class="accordion-content" id="nested-allowed-container">
+                <span class="loading-info">Lade Teams...</span>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="team-overview-section" id="view-team-counter" style="display: none;">
+    <h2>📋 Team-Übersicht (Kinder-Counter)</h2>
+    <div id="team-accordion-container">
+        <span class="loading-info">Lade Team-Statistiken...</span>
+    </div>
+</div>
+
+<script>
+const supabaseUrl = 'https://qkmtybzdthrpjfkbgskw.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrbXR5YnpkdGhycGpma2Jnc2t3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4ODI3ODIsImV4cCI6MjA4MzQ1ODc4Mn0.VO1Bz0vKO4xTrcu-XCsZlrF4HgvgdbGLz3KKFRfG0Do';
+const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+const vorname = sessionStorage.getItem('userVorname');
+const team = sessionStorage.getItem('gruppeName');
+const userId = sessionStorage.getItem('userId');
+const userJob = sessionStorage.getItem('userJob'); 
+
+function getTodayString() {
+    const today = new Date();
+    const offset = today.getTimezoneOffset();
+    const localToday = new Date(today.getTime() - (offset * 60 * 1000));
+    return localToday.toISOString().split('T')[0];
+}
+
+async function init() {
+    if (!vorname || !userId) { 
+        alert("Fehler: Keine userId oder kein Vorname im sessionStorage gefunden!");
+        window.location.href = 'index.html'; 
+        return; 
+    }
+
+    const nameDisplay = document.getElementById('user-display-name');
+    const welcomeDisplay = document.getElementById('welcome-message');
+    if (nameDisplay) nameDisplay.innerText = vorname;
+    if (welcomeDisplay) welcomeDisplay.innerText = `Team: ${team}`;
+
+    // Rollenbasierte Rechteprüfung beim Laden
+    if (userJob === "2") {
+        document.getElementById('view-admin').style.display = 'block';
+        document.getElementById('view-team-counter').style.display = 'block'; // Zeige Team-Übersicht nur für Admins
+        await loadAdminDrinkLists();
+        await loadTeamAccordion(); // Lade Daten nur für Admins nach
+    } else {
+        document.getElementById('view-player').style.display = 'block';
+        await loadPlayerDrinkStatus();
+    }
+}
+
+// --- LOGIK FÜR SPIELER & ADMIN-EIGENSTATUS ---
+async function loadPlayerDrinkStatus() {
+    const statusScreen = document.getElementById('drink-status-screen');
+    const statusText = document.getElementById('drink-status-text');
+    const counterInfo = document.getElementById('drink-counter-info');
+    const counterCount = document.getElementById('my-drink-count');
+    const headerStatus = document.getElementById('header-status');
+
+    if (userJob === "2") {
+        if (statusScreen) {
+            statusScreen.className = "status-screen status-allowed";
+            statusText.innerText = "Getränke freigegeben (Admin)";
+            counterInfo.style.display = 'none';
+        }
+        if (headerStatus) {
+            headerStatus.innerText = "Frei";
+            headerStatus.className = "header-status-badge badge-allowed";
+        }
+        return;
+    }
+
+    const { data: userData, error } = await supabaseClient
+        .from('Pfingstturnier')
+        .select('drinkcounter, drinklastfree')
+        .eq('id', userId)
+        .maybeSingle();
+
+    if (error) {
+        statusText.innerText = "Fehler beim Laden des Status.";
+        return;
+    }
+
+    const todayStr = getTodayString();
+
+    if (userData) {
+        counterInfo.style.display = 'inline-block';
+        counterCount.innerText = userData.drinkcounter || 0;
+
+        if (userData.drinklastfree === todayStr) {
+            statusScreen.className = "status-screen status-allowed";
+            statusText.innerText = "Getränke freigegeben";
+            headerStatus.innerText = "Frei";
+            headerStatus.className = "header-status-badge badge-allowed";
+        } else {
+            statusScreen.className = "status-screen status-denied";
+            statusText.innerText = "Getränke nicht freigegeben";
+            headerStatus.innerText = "Gesperrt";
+            headerStatus.className = "header-status-badge badge-denied";
+        }
+    } else {
+        statusScreen.className = "status-screen status-denied";
+        statusText.innerText = "Benutzer nicht gefunden.";
+        counterInfo.style.display = 'none';
+    }
+}
+
+// --- LOGIK FÜR ADMINS (JOB 2) - ACCORDION IM ACCORDION ---
+async function loadAdminDrinkLists() {
+    const deniedContainer = document.getElementById('nested-denied-container');
+    const allowedContainer = document.getElementById('nested-allowed-container');
+    const headerStatus = document.getElementById('header-status');
+
+    if (headerStatus) {
+        headerStatus.innerText = "Frei";
+        headerStatus.className = "header-status-badge badge-allowed";
+    }
+
+    const { data: users, error } = await supabaseClient
+        .from('Pfingstturnier')
+        .select('*');
+
+    if (error) {
+        deniedContainer.innerHTML = "Fehler beim Laden der Liste.";
+        allowedContainer.innerHTML = "Fehler beim Laden der Liste.";
+        return;
+    }
+
+    const todayStr = getTodayString();
+
+    const deniedTeams = {};
+    const allowedTeams = {};
+
+    users.forEach(user => {
+        const count = user.drinkcounter || 0;
+        const isAllowedToday = (user.drinklastfree === todayStr);
+        const teamName = user.team || "Kein Team";
+
+        const parentFullName = `${user.vorname} ${user.nachname || ''}`.trim();
+        const childInfo = (user.kindname && user.kindname !== "-") ? `Kind: ${user.kindname}` : "Trainer / Kein Kind";
+
+        const itemHtml = `
+            <div class="drink-item">
+                <div class="drink-item-info">
+                    <span class="drink-item-name">${parentFullName}</span>
+                    <span class="drink-item-sub">${childInfo} | Erhalten: ${count}</span>
+                </div>
+                <div class="action-group">
+                    ${isAllowedToday ? 
+                        `<button class="action-btn btn-plus" onclick="toggleDrink('${user.id}', ${count}, true)">+1 Mehr</button>
+                         <button class="action-btn btn-deny" onclick="toggleDrink('${user.id}', ${count}, false)">Sperren</button>` : 
+                        `<button class="action-btn btn-allow" onclick="toggleDrink('${user.id}', ${count}, true)">Freigeben</button>`
+                    }
+                </div>
+            </div>
+        `;
+
+        if (isAllowedToday) {
+            if (!allowedTeams[teamName]) allowedTeams[teamName] = [];
+            allowedTeams[teamName].push(itemHtml);
+        } else {
+            if (!deniedTeams[teamName]) deniedTeams[teamName] = [];
+            deniedTeams[teamName].push(itemHtml);
+        }
+    });
+
+    function buildNestedAccordion(groupedObject) {
+        if (Object.keys(groupedObject).length === 0) {
+            return "<p class='loading-info'>Keine Einträge vorhanden.</p>";
+        }
+        
+        let html = "";
+        for (const teamName in groupedObject) {
+            html += `
+                <div class="accordion-item sub-accordion">
+                    <div class="accordion-header sub-header" onclick="toggleAccordion(this)">
+                        <span>👥 ${teamName} (${groupedObject[teamName].length})</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="drink-list">
+                            ${groupedObject[teamName].join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        return html;
+    }
+
+    deniedContainer.innerHTML = buildNestedAccordion(deniedTeams);
+    allowedContainer.innerHTML = buildNestedAccordion(allowedTeams);
+}
+
+// Erhöhen und Sperren Logik
+async function toggleDrink(personId, currentCount, shouldAllow) {
+    const todayStr = getTodayString();
+    try {
+        if (shouldAllow) {
+            const newCount = Number(currentCount) + 1;
+            const { error } = await supabaseClient
+                .from('Pfingstturnier')
+                .update({ drinkcounter: newCount, drinklastfree: todayStr })
+                .eq('id', personId);
+            if (error) throw error;
+        } else {
+            const { error } = await supabaseClient
+                .from('Pfingstturnier')
+                .update({ drinklastfree: null })
+                .eq('id', personId);
+            if (error) throw error;
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Datenbank-Fehler beim Updaten.");
+    }
+
+    if (userJob === "2") {
+        await loadAdminDrinkLists();
+        await loadTeamAccordion();
+    } else {
+        await loadPlayerDrinkStatus();
+    }
+}
+
+// --- UNTEN: TEAM-ÜBERSICHT COUNTER (WIRD NUR NOCH FÜR ADMINS AUSGEFÜHRT) ---
+async function loadTeamAccordion() {
+    const container = document.getElementById('team-accordion-container');
+    const { data: users, error } = await supabaseClient
+        .from('Pfingstturnier')
+        .select('*');
+
+    if (error) {
+        container.innerHTML = "Fehler beim Laden der Team-Übersicht.";
+        return;
+    }
+
+    const mergedChildren = {};
+
+    users.forEach(user => {
+        const teamName = user.team || "Kein Team";
+        const lastName = (user.nachname || "").trim();
+        const lastNameLower = lastName.toLowerCase();
+        
+        const hasNoChildName = !user.kindname || user.kindname.trim() === "" || user.kindname.trim() === "-";
+        
+        let childNameWithLast = "";
+        let isTrainerWithoutChild = false;
+
+        if (hasNoChildName) {
+            childNameWithLast = `${user.vorname} (Trainer)`;
+            isTrainerWithoutChild = true;
+        } else {
+            childNameWithLast = `${user.kindname.trim()} ${lastName}`.trim();
+        }
+
+        const childNameKey = childNameWithLast.toLowerCase();
+        const uniqueKey = isTrainerWithoutChild 
+            ? `trainer_${user.id}` 
+            : `${teamName}_${childNameKey}_${lastNameLower}`;
+
+        const parentCounter = user.drinkcounter || 0;
+
+        if (mergedChildren[uniqueKey]) {
+            mergedChildren[uniqueKey].totalCounter += parentCounter;
+        } else {
+            mergedChildren[uniqueKey] = {
+                visibleName: childNameWithLast,
+                team: teamName,
+                totalCounter: parentCounter
+            };
+        }
+    });
+
+    const teamsGrouped = {};
+    Object.values(mergedChildren).forEach(child => {
+        if (!teamsGrouped[child.team]) {
+            teamsGrouped[child.team] = [];
+        }
+        teamsGrouped[child.team].push(child);
+    });
+
+    container.innerHTML = "";
+
+    for (const teamName in teamsGrouped) {
+        let rowsHtml = "";
+        teamsGrouped[teamName].forEach(child => {
+            rowsHtml += `
+                <tr>
+                    <td>${child.visibleName}</td>
+                    <td style="text-align: right; font-weight: bold;">${child.totalCounter}</td>
+                </tr>
+            `;
+        });
+
+        const accordionHtml = `
+            <div class="accordion-item">
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    <span>👥 ${teamName}</span>
+                    <span>▼</span>
+                </div>
+                <div class="accordion-content">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name / Kinder-Name</th>
+                                <th style="text-align: right;">Erhaltene Getränke</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rowsHtml}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+        container.innerHTML += accordionHtml;
+    }
+}
+
+// Universelle Funktion zum Auf- und Zuklappen aller Accordions
+function toggleAccordion(element) {
+    event.stopPropagation(); 
+    const content = element.nextElementSibling;
+    const arrow = element.querySelector('span:last-child');
+    if (content.style.display === "block") {
+        content.style.display = "none";
+        arrow.innerText = "▼";
+    } else {
+        content.style.display = "block";
+        arrow.innerText = "▲";
+    }
+}
+
+init();
+</script>
+</body>
+</html>

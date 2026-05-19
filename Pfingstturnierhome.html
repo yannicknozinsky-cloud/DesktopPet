@@ -8,9 +8,10 @@
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <style>
     /* Modal Styling */
-.modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); overflow-y: auto; }
-.modal-content { background-color: white; margin: 10% auto; padding: 20px; border-radius: 8px; width: 80%; max-width: 500px; text-align: center; }
-.admin-btn { background-color: #333; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 10px; }
+    .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); overflow-y: auto; }
+    .modal-content { background-color: white; margin: 10% auto; padding: 20px; border-radius: 8px; width: 80%; max-width: 500px; text-align: center; }
+    .admin-btn { background-color: #333; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 10px; }
+    
     /* Grund-Styling */
     body { font-family: system-ui, sans-serif; margin:20px; background:#f7f7f7; }
     
@@ -18,8 +19,19 @@
     .header { display: flex; align-items: center; margin-bottom: 20px; padding-right: 40px; }
     .header-text { flex-grow: 1; display: flex; flex-direction: column; text-align: center; }
     .header-text h1 { font-size: 1.5rem; margin: 0; }
-    .header-text h2 { font-size: 1.1rem; color: #555; margin: 0; }
+    .header-text h2 { font-size: 1.1rem; color: #555; margin: 0; display: flex; justify-content: center; align-items: center; gap: 8px; }
     .header-text h3 { font-size: 1rem; color: #333; font-weight: normal; margin: 0; }
+
+    /* Getränke Status Box oben */
+    .status-screen-container { max-width: 600px; margin: 0 auto 15px auto; text-align: center; }
+    .status-screen { padding: 20px; border-radius: 10px; color: white; font-size: 1.4rem; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+    .status-allowed { background-color: #28a745; border: 2px solid #1e7e34; }
+    .status-denied { background-color: #dc3545; border: 2px solid #bd2130; }
+    .counter-badge { display: inline-block; background: rgba(0,0,0,0.2); padding: 4px 12px; border-radius: 15px; font-size: 0.95rem; margin-top: 8px; }
+    
+    .header-status-badge { font-size: 0.8rem; padding: 2px 8px; border-radius: 10px; color: white; font-weight: bold; }
+    .badge-allowed { background-color: #28a745; }
+    .badge-denied { background-color: #dc3545; }
 
     .dropbtn { background-color:#333; color:white; padding:8px 12px; font-size:16px; border:none; cursor:pointer; border-radius: 4px; }
     .dropdown { position:relative; }
@@ -28,7 +40,7 @@
     .dropdown:hover .dropdown-content { display:block; }
 
     /* Akkordeon / Dropdowns untereinander */
-    .accordion-container { max-width: 600px; margin: 20px auto; }
+    .accordion-container { max-width: 600px; margin: 0 auto 20px auto; }
     .accordion-item { border-bottom: 1px solid #ddd; background: white; margin-bottom: 5px; }
     .accordion-item input { display: none; }
     .accordion-header { display: block; padding: 15px; font-weight: bold; cursor: pointer; background: #f1f1f1; position: relative; }
@@ -72,14 +84,25 @@
       <a href="FCEPTLogin.html">➜ Log out</a>
       <a href="PTInfos.html">Infos</a>
       <a href="PTSpiele.html">⚽ Unsere Spiele</a>
+      <a href="PTDrinks.html">Getränke</a>
     </div>
   </div>
 
   <div class="header-text">
     <h1 id="groupTitle">Pfingstturnier 2026</h1>
-    <h2>Hallo, <span id="user-display-name">Gast</span>!</h2>
+    <h2>Hallo, <span id="user-display-name">Gast</span>! <span id="header-status" class="header-status-badge"></span></h2>
     <h3 id="welcome-message"></h3>
   </div>
+</div>
+
+<div class="status-screen-container">
+    <div id="drink-status-screen" class="status-screen status-denied">
+        <span id="drink-status-text">Lade Status...</span>
+        <br>
+        <div id="drink-counter-info" class="counter-badge" style="display:none;">
+            Freigaben insgesamt: <span id="my-drink-count">0</span>
+        </div>
+    </div>
 </div>
 
 <div class="accordion-container">
@@ -95,13 +118,12 @@
     </div>
 
     <div class="accordion-item">
-    <input type="checkbox" id="item3">
-    <label for="item3" class="accordion-header">Meine Dienste</label>
-    <div class="accordion-content">
-        <div id="my-services-list" class="card-list"> <p>Lade Dienste...</p>
+        <input type="checkbox" id="item3">
+        <label for="item3" class="accordion-header">Meine Dienste</label>
+        <div class="accordion-content">
+            <div id="my-services-list" class="card-list"> <p>Lade Dienste...</p></div>
         </div>
     </div>
-</div>
 
     <div class="accordion-item">
         <input type="checkbox" id="item2">
@@ -113,14 +135,13 @@
         </div>
     </div>
 
-<div class="accordion-item">
-    <input type="checkbox" id="item4">
-    <label for="item4" class="accordion-header">Offene Dienste</label>
-    <div class="accordion-content">
-        <div id="open-services-list" class="card-list"> <p>Dienstplan folgt.</p>
+    <div class="accordion-item">
+        <input type="checkbox" id="item4">
+        <label for="item4" class="accordion-header">Offene Dienste</label>
+        <div class="accordion-content">
+            <div id="open-services-list" class="card-list"> <p>Dienstplan folgt.</p></div>
         </div>
     </div>
-</div>
 
     <div class="accordion-item">
         <input type="checkbox" id="item6">
@@ -144,7 +165,7 @@
 
     <div class="accordion-item" id="admin-assignment-item" style="display: none;">
         <input type="checkbox" id="item7">
-        <label for="item7" class="accordion-header" style="background: #e2e8f0;">⚙️ Admin: Wer bringt was?</label>
+        <label for="item7" class="accordion-header" style="background: #e2e8f0;">⚙️ Admin: Wer brings was?</label>
         <div class="accordion-content">
             <div style="text-align: center; padding: 10px;">
                 <button class="admin-btn" style="background-color: #009688; margin-bottom: 15px;" onclick="openUserStatusModal()">Angemeldete User anzeigen</button>
@@ -218,6 +239,13 @@ const userJob = sessionStorage.getItem('userJob');
 
 let myChart = null;
 
+function getTodayString() {
+    const today = new Date();
+    const offset = today.getTimezoneOffset();
+    const localToday = new Date(today.getTime() - (offset * 60 * 1000));
+    return localToday.toISOString().split('T')[0];
+}
+
 async function init() {
     if (!vorname || !userId) { window.location.href = 'index.html'; return; }
 
@@ -236,7 +264,66 @@ async function init() {
     if (nameDisplay) nameDisplay.innerText = vorname;
     if (welcomeDisplay) welcomeDisplay.innerText = `Team: ${team}`;
 
+    // Lade die Getränkestatus-Box oben
+    await loadPlayerDrinkStatus();
+
     await refreshLists();
+}
+
+// NEU: GETRÄNKESTATUS-LOGIK FÜR DIE HOME-BOX
+async function loadPlayerDrinkStatus() {
+    const statusScreen = document.getElementById('drink-status-screen');
+    const statusText = document.getElementById('drink-status-text');
+    const counterInfo = document.getElementById('drink-counter-info');
+    const counterCount = document.getElementById('my-drink-count');
+    const headerStatus = document.getElementById('header-status');
+
+    if (userJob === "2") {
+        if (statusScreen) {
+            statusScreen.className = "status-screen status-allowed";
+            statusText.innerText = "Getränke freigegeben (Admin)";
+            counterInfo.style.display = 'none';
+        }
+        if (headerStatus) {
+            headerStatus.innerText = "Frei";
+            headerStatus.className = "header-status-badge badge-allowed";
+        }
+        return;
+    }
+
+    const { data: userData, error } = await supabaseClient
+        .from('Pfingstturnier')
+        .select('drinkcounter, drinklastfree')
+        .eq('id', userId)
+        .maybeSingle();
+
+    if (error) {
+        statusText.innerText = "Fehler beim Laden des Status.";
+        return;
+    }
+
+    const todayStr = getTodayString();
+
+    if (userData) {
+        counterInfo.style.display = 'inline-block';
+        counterCount.innerText = userData.drinkcounter || 0;
+
+        if (userData.drinklastfree === todayStr) {
+            statusScreen.className = "status-screen status-allowed";
+            statusText.innerText = "Getränke freigegeben";
+            headerStatus.innerText = "Frei";
+            headerStatus.className = "header-status-badge badge-allowed";
+        } else {
+            statusScreen.className = "status-screen status-denied";
+            statusText.innerText = "Getränke nicht freigegeben";
+            headerStatus.innerText = "Gesperrt";
+            headerStatus.className = "header-status-badge badge-denied";
+        }
+    } else {
+        statusScreen.className = "status-screen status-denied";
+        statusText.innerText = "Benutzer nicht gefunden.";
+        counterInfo.style.display = 'none';
+    }
 }
 
 async function refreshLists() {
