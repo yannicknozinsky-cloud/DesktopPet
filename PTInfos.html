@@ -58,6 +58,41 @@ th, td { padding:8px; text-align:center; border:1px solid #ddd; }
 .dropdown:hover .dropdown-content { display:block; }
 </style>
 
+<style>
+/* Das CSS am besten in deine Stylesheet-Datei packen */
+.download-list {
+    padding: 10px 20px 20px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px; /* Abstand zwischen den Links */
+}
+
+.download-link {
+    display: flex;
+    align-items: center;
+    color: #2c3e50; /* Schönes Dunkelgrau/Blau */
+    text-decoration: none;
+    font-family: sans-serif;
+    font-weight: 500;
+    padding: 8px 12px;
+    border-radius: 6px;
+    background-color: #f8f9fa; /* Ganz leichter grauer Hintergrund */
+    transition: all 0.2s ease-in-out;
+}
+
+/* Hover-Effekt: Link färbt sich blau und rückt minimal nach rechts */
+.download-link:hover {
+    background-color: #e9ecef;
+    color: #007bff;
+    padding-left: 16px; 
+}
+
+.download-link .icon {
+    margin-right: 10px;
+    font-size: 1.1em;
+}
+</style>
+
 <div class="header">
   <div class="dropdown">
     <button class="dropbtn">☰</button>
@@ -163,6 +198,53 @@ th, td { padding:8px; text-align:center; border:1px solid #ddd; }
     </div>
 </div>
 
+  <div class="accordion-item">
+    <input type="checkbox" id="Treffpunkt"> <label for="Treffpunkt" class="accordion-header">Treffpunkt Freitag</label>
+    <div class="accordion-content">
+        <div style="padding: 0 15px 15px 15px;">
+            
+            <p>Treffpunkt ist in Mammendorf, an den Zelten, um 15Uhr, den Zeltplatz auf dem wir sind, erfahrt ihr von eurem Trainer um ca 14:45Uhr.</p>
+            <p>Nach Absprache mit mir könnt ihr euer eigenes Zelt aufbauen und einrichten.</p>
+            <p>Um 16Uhr kommen unsere 2 großen Zelte, diese werden gemeinschaftlich aufgebaut, danach seid ihr entlassen bzw. zum grillen eingeladen.</p>
+           
+        </div>
+    </div>
+</div>
+
+<div class="accordion-item">
+    <input type="checkbox" id="Kosten"> <label for="Kosten" class="accordion-header">Kosten</label>
+    <div class="accordion-content">
+        <div style="padding: 0 15px 15px 15px;">
+            <p>Jedes Team zahlt 125Euro für die großen Zelte  - ca 10€/Kind</p>
+            <p>Volle Essensbuchung für Frühstück und Mittag - 49€/Person</p>
+            <p>Pizza am Samstag - 5€/Esser</p>
+            <p>Der Getränke Wagen und die Getränke werden im Nachhinein abgerechnet - ca 20€/Teilnehmer</p>
+        
+        </div>
+    </div>
+</div>
+
+
+
+
+<div class="accordion-item">
+    <input type="checkbox" id="Downloads"> <label for="Downloads" class="accordion-header">Downloads - Parken, Gelände...</label>
+    <div class="accordion-content">
+    <div class="download-list">
+        <a href="PTPDF/Parken.pdf" download="Pfingstturnier-Parken.pdf" class="download-link">
+            <span class="icon">📄</span> Parken (PDF)
+        </a>
+        <a href="PTPDF/Gelände.pdf" download="Pfingstturnier-Gelände.pdf" class="download-link">
+            <span class="icon">📄</span> Gelände (PDF)
+        </a>
+        <a href="PTPDF/Speiseplan.pdf" download="Pfingstturnier-Speiseplan.pdf" class="download-link">
+            <span class="icon">📄</span> Speiseplan (PDF)
+        </a>
+    </div>
+</div>
+
+
+</div>
 
 
     <div class="accordion-item">
@@ -201,7 +283,11 @@ th, td { padding:8px; text-align:center; border:1px solid #ddd; }
                     <td style="padding: 8px;">Eröffnungsfeier</td>
                 </tr>
                 <tr style="border-bottom: 1px solid #eee;">
-                    <td style="padding: 8px; font-weight: bold;">18:00</td>
+                    <td style="padding: 8px; font-weight: bold;">20:00</td>
+                    <td style="padding: 8px;">DFB Pokal Finale - DIE BAYERN, DIE BAYERN</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 8px; font-weight: bold;">21:00</td>
                     <td style="padding: 8px;">Abendessen - Pizza</td>
                 </tr>
                  <tr style="border-bottom: 1px solid #eee;">
@@ -456,7 +542,7 @@ th, td { padding:8px; text-align:center; border:1px solid #ddd; }
     </div>
 </div>
 
-    
+
 
 
 </div>
